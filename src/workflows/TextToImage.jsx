@@ -26,6 +26,8 @@ export default function TextToImage() {
   const [height, setHeight] = useState(DEFAULT_HEIGHT);
   const [seed, setSeed] = useState(generateRandomSeed());
   const [model, setModel] = useState(MODELS.DISTILLED);
+  const [steps, setSteps] = useState(MODEL_SETTINGS.DISTILLED.steps);
+  const [cfg, setCfg] = useState(MODEL_SETTINGS.DISTILLED.cfg);
 
   // Generation state
   const [isGenerating, setIsGenerating] = useState(false);
@@ -52,6 +54,14 @@ export default function TextToImage() {
     };
   }, []);
 
+  // Update steps and cfg when model changes
+  useEffect(() => {
+    const isDistilled = model === MODELS.DISTILLED;
+    const modelSettings = isDistilled ? MODEL_SETTINGS.DISTILLED : MODEL_SETTINGS.BASE;
+    setSteps(modelSettings.steps);
+    setCfg(modelSettings.cfg);
+  }, [model]);
+
   const handleGenerate = async () => {
     if (!prompt.trim()) {
       setError('Please enter a prompt');
@@ -77,12 +87,6 @@ export default function TextToImage() {
       // Load and update workflow
       setStatus('Loading workflow...');
       const baseWorkflow = await loadWorkflow();
-
-      // Determine steps and CFG based on selected model
-      const isDistilled = model === MODELS.DISTILLED;
-      const modelSettings = isDistilled ? MODEL_SETTINGS.DISTILLED : MODEL_SETTINGS.BASE;
-      const steps = modelSettings.steps;
-      const cfg = modelSettings.cfg;
 
       const updatedWorkflow = updateWorkflow(baseWorkflow, {
         prompt,
@@ -239,10 +243,14 @@ export default function TextToImage() {
             height={height}
             seed={seed}
             model={model}
+            steps={steps}
+            cfg={cfg}
             onWidthChange={setWidth}
             onHeightChange={setHeight}
             onSeedChange={setSeed}
             onModelChange={setModel}
+            onStepsChange={setSteps}
+            onCfgChange={setCfg}
             disabled={isGenerating}
           />
 

@@ -4,17 +4,21 @@ import { generateRandomSeed } from '../services/workflow-loader';
 import './ParameterControls.css';
 
 /**
- * Control panel for workflow parameters (dimensions, seed, model)
+ * Control panel for workflow parameters (dimensions, seed, model, steps, cfg)
  */
 export default function ParameterControls({
   width,
   height,
   seed,
   model,
+  steps,
+  cfg,
   onWidthChange,
   onHeightChange,
   onSeedChange,
   onModelChange,
+  onStepsChange,
+  onCfgChange,
   disabled,
 }) {
   const handleRandomizeSeed = () => {
@@ -98,6 +102,46 @@ export default function ParameterControls({
           <option value={MODELS.DISTILLED}>Flux 2 Klein 4B Distilled (Fast)</option>
           <option value={MODELS.BASE}>Flux 2 Klein 4B Base (Quality)</option>
         </select>
+      </div>
+
+      <div className="parameter-section">
+        <h3 className="parameter-section-title">Generation Parameters</h3>
+
+        <div className="parameter-row">
+          <div className="parameter-field">
+            <label htmlFor="steps" className="parameter-label">
+              Steps
+            </label>
+            <input
+              id="steps"
+              type="number"
+              className="parameter-input"
+              value={steps}
+              onChange={(e) => onStepsChange(parseInt(e.target.value) || 1)}
+              min="1"
+              max="100"
+              step="1"
+              disabled={disabled}
+            />
+          </div>
+
+          <div className="parameter-field">
+            <label htmlFor="cfg" className="parameter-label">
+              CFG Scale
+            </label>
+            <input
+              id="cfg"
+              type="number"
+              className="parameter-input"
+              value={cfg}
+              onChange={(e) => onCfgChange(parseFloat(e.target.value) || 1.0)}
+              min="0"
+              max="30"
+              step="0.1"
+              disabled={disabled}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
