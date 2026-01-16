@@ -1,0 +1,103 @@
+.image-drop-zone-container {
+  margin-bottom: 1rem;
+}
+
+.image-drop-zone {
+  border: 2px dashed #404040;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  background: #1a1a1a;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.image-drop-zone:hover:not(.disabled) {
+  border-color: #0066cc;
+  background: #222222;
+}
+
+.image-drop-zone.dragging {
+  border-color: #0066cc;
+  background: #222222;
+  border-style: solid;
+}
+
+.image-drop-zone.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.drop-zone-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.drop-zone-icon {
+  width: 48px;
+  height: 48px;
+  color: #707070;
+}
+
+.image-drop-zone.dragging .drop-zone-icon {
+  color: #0066cc;
+}
+
+.drop-zone-text {
+  font-size: 0.875rem;
+  color: #e0e0e0;
+  margin: 0;
+}
+
+.drop-zone-subtext {
+  font-size: 0.75rem;
+  color: #707070;
+  margin: 0;
+}
+
+.drop-zone-button {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: #2a2a2a;
+  border: 1px solid #404040;
+  border-radius: 6px;
+  color: #e0e0e0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.drop-zone-button:hover:not(:disabled) {
+  background: #333333;
+  border-color: #0066cc;
+}
+
+.drop-zone-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.drop-zone-error {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  border-radius: 6px;
+  color: #fca5a5;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.drop-zone-success {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 6px;
+  color: #86efac;
+  font-size: 0.875rem;
+  text-align: center;
+}

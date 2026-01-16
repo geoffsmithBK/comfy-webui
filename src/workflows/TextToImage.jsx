@@ -4,6 +4,7 @@ import NegativePromptInput from '../components/NegativePromptInput';
 import ParameterControls from '../components/ParameterControls';
 import ImageDisplay from '../components/ImageDisplay';
 import ProgressBar from '../components/ProgressBar';
+import ImageDropZone from '../components/ImageDropZone';
 import {
   loadWorkflow,
   updateWorkflow,
@@ -64,6 +65,52 @@ export default function TextToImage() {
     setSteps(modelSettings.steps);
     setCfg(modelSettings.cfg);
   }, [model]);
+
+  const handleParametersLoaded = (params) => {
+    try {
+      console.log('handleParametersLoaded received:', params);
+
+      // Load parameters from dropped image - validate each before setting
+      if (params.prompt !== undefined && typeof params.prompt === 'string') {
+        setPrompt(params.prompt);
+      }
+      if (params.negativePrompt !== undefined && typeof params.negativePrompt === 'string') {
+        setNegativePrompt(params.negativePrompt);
+      }
+      if (params.negativePromptEnabled !== undefined && typeof params.negativePromptEnabled === 'boolean') {
+        setNegativePromptEnabled(params.negativePromptEnabled);
+      }
+      if (params.width !== undefined && typeof params.width === 'number' && !isNaN(params.width)) {
+        setWidth(params.width);
+      }
+      if (params.height !== undefined && typeof params.height === 'number' && !isNaN(params.height)) {
+        setHeight(params.height);
+      }
+      if (params.seed !== undefined && typeof params.seed === 'number' && !isNaN(params.seed)) {
+        setSeed(params.seed);
+      }
+      if (params.model !== undefined && typeof params.model === 'string') {
+        setModel(params.model);
+      }
+      if (params.steps !== undefined && typeof params.steps === 'number' && !isNaN(params.steps)) {
+        setSteps(params.steps);
+      }
+      if (params.cfg !== undefined && typeof params.cfg === 'number' && !isNaN(params.cfg)) {
+        setCfg(params.cfg);
+      }
+
+      // Display the loaded image
+      if (params.imageUrl && typeof params.imageUrl === 'string') {
+        setGeneratedImageUrl(params.imageUrl);
+      }
+
+      console.log('Successfully loaded parameters from image');
+    } catch (error) {
+      console.error('Error in handleParametersLoaded:', error);
+      console.error('Stack trace:', error.stack);
+      setError('Error loading parameters into UI');
+    }
+  };
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -236,6 +283,11 @@ export default function TextToImage() {
             handleGenerate();
           }}
         >
+          <ImageDropZone
+            onParametersLoaded={handleParametersLoaded}
+            disabled={isGenerating}
+          />
+
           <PromptInput
             value={prompt}
             onChange={setPrompt}
