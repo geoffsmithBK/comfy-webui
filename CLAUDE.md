@@ -511,3 +511,144 @@ All WebSocket messages and image fetch operations are logged to the browser cons
 
 ### Current Status: MVP Complete
 The application successfully generates images with both Flux 2 Klein model variants, displays them in the UI, and provides a polished user experience with real-time progress tracking and automatic parameter optimization.
+
+## Version Control and Repository
+
+### GitHub Repository
+**Repository URL**: https://github.com/geoffsmithBK/comfy-webui
+
+The project is version-controlled with Git and hosted on GitHub. All source code, documentation, and configuration files are tracked.
+
+### GitHub CLI (`gh`) Available
+The GitHub CLI tool is installed via Homebrew and should be used for GitHub operations:
+- Creating pull requests: `gh pr create`
+- Viewing issues: `gh issue list`
+- Managing releases: `gh release create`
+- Repository operations: `gh repo view`
+
+### Git Workflow
+
+**Checking Status**:
+```bash
+git status                    # Check working directory status
+git log --oneline -5          # View recent commits
+git diff                      # See uncommitted changes
+```
+
+**Making Changes**:
+```bash
+git add <file>                # Stage specific files
+git add .                     # Stage all changes
+git commit -m "message"       # Commit with message
+git push                      # Push to GitHub
+```
+
+**Pulling Updates** (on another machine):
+```bash
+git pull                      # Fetch and merge latest changes
+```
+
+**Cloning** (setting up on a new machine):
+```bash
+git clone https://github.com/geoffsmithBK/comfy-webui.git
+cd comfy-webui
+npm install                   # Install dependencies
+```
+
+### Branch Structure
+- **main**: Primary development branch
+- Feature branches can be created as needed for larger changes
+
+### What's Tracked in Git
+✅ **Included**:
+- Source code (`src/`)
+- Public assets (`public/`)
+- Configuration files (`package.json`, `vite.config.js`, etc.)
+- Documentation (`.md` files)
+- Workflow JSON files
+
+❌ **Excluded** (via `.gitignore`):
+- `node_modules/` - Dependencies (regenerated with `npm install`)
+- `dist/` - Build output
+- `.DS_Store` - macOS metadata
+- `*.local` - Local config files
+- `.claude/` - Claude Code session files
+
+### Commit Message Convention
+Use descriptive commit messages with co-author attribution:
+```bash
+git commit -m "Add feature description
+
+Detailed explanation of changes.
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+```
+
+### Syncing Between Machines
+**From work to home**:
+```bash
+# On work machine
+git add .
+git commit -m "Description of changes"
+git push
+
+# On home machine
+git pull
+npm install  # If dependencies changed
+```
+
+**From home to work** (same process in reverse)
+
+### Creating Pull Requests
+Use GitHub CLI for creating PRs:
+```bash
+gh pr create --title "Feature name" --body "Description"
+```
+
+Or use the web interface at https://github.com/geoffsmithBK/comfy-webui/pulls
+
+### Release Management
+When ready to tag releases:
+```bash
+git tag -a v0.1.0 -m "Release version 0.1.0"
+git push --tags
+
+# Or use GitHub CLI
+gh release create v0.1.0 --title "v0.1.0" --notes "Release notes"
+```
+
+### Portability Notes
+The project is fully portable across machines:
+- No hardcoded absolute paths in source code
+- All connections use localhost (127.0.0.1)
+- Dependencies are specified in `package.json`
+- ComfyUI path examples in documentation can be adjusted per machine
+- Workflow JSON files are included in the repository
+
+Just ensure the target machine has:
+- Node.js 18+
+- ComfyUI installation with required models
+- Python (for running ComfyUI)
+
+### Troubleshooting Git Issues
+
+**Merge Conflicts**:
+```bash
+git status              # See conflicted files
+# Edit files to resolve conflicts
+git add <resolved-file>
+git commit
+```
+
+**Undoing Changes**:
+```bash
+git restore <file>      # Discard changes to a file
+git reset HEAD~1        # Undo last commit (keep changes)
+git reset --hard HEAD~1 # Undo last commit (discard changes)
+```
+
+**Checking Remote**:
+```bash
+git remote -v           # Show remote URLs
+git branch -vv          # Show branch tracking info
+```
