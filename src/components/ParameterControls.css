@@ -1,0 +1,94 @@
+.parameter-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.parameter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.parameter-section-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #e0e0e0;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.parameter-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.parameter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.parameter-field-grow {
+  flex: 1;
+}
+
+.parameter-label {
+  font-size: 0.813rem;
+  color: #b0b0b0;
+}
+
+.parameter-input,
+.parameter-select {
+  padding: 0.625rem;
+  background: #2a2a2a;
+  border: 1px solid #404040;
+  border-radius: 6px;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.875rem;
+  transition: border-color 0.2s;
+}
+
+.parameter-input:focus,
+.parameter-select:focus {
+  outline: none;
+  border-color: #0066cc;
+}
+
+.parameter-input:disabled,
+.parameter-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.parameter-select {
+  cursor: pointer;
+  width: 100%;
+}
+
+.parameter-button {
+  padding: 0.625rem 1rem;
+  background: #0066cc;
+  border: none;
+  border-radius: 6px;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.parameter-button:hover:not(:disabled) {
+  background: #0052a3;
+}
+
+.parameter-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
