@@ -52,6 +52,7 @@ Each subgraph contains these functional groups:
 
 ### Key Workflow Parameters
 - **Prompt**: User text input for image generation
+- **Negative Prompt**: Optional text to steer generation away from unwanted elements (default: "blurry, ugly, bad, text")
 - **Image Dimensions**: Width and height (default 1024x1024)
 - **Noise Seed**: Random seed for reproducibility
 - **Scheduler Steps**: 20 for base model, 4 for distilled model
@@ -78,8 +79,9 @@ When building the web UI, you'll need to interact with the ComfyUI API at `http:
 ## Development Notes
 
 ### Reference UI
-The `comfy_webui_text-to-image.png` screenshot shows the target UI design. The interface should provide:
+The `comfy_webui_text-to-image.png` screenshot shows the target UI design. The interface provides:
 - Text input field for prompts
+- Optional negative prompt (checkbox-enabled)
 - Image dimension controls
 - Model selection (base vs distilled)
 - Generation trigger button
@@ -117,6 +119,7 @@ The web UI is built with:
 src/
 ├── components/          # Reusable UI components
 │   ├── PromptInput.jsx  # Multiline prompt text input
+│   ├── NegativePromptInput.jsx  # Optional negative prompt with checkbox
 │   ├── ParameterControls.jsx  # Dimension, seed, and model controls
 │   ├── ImageDisplay.jsx # Image display with download button
 │   └── ProgressBar.jsx  # Real-time progress indicator
@@ -138,6 +141,7 @@ The application modifies specific nodes in the workflow JSON to update parameter
 | Parameter | Node ID | Field | Description |
 |-----------|---------|-------|-------------|
 | Prompt | 76 | `inputs.value` | PrimitiveStringMultiline for prompt text |
+| Negative Prompt | 75:67 | `inputs.text` | CLIPTextEncode negative prompt (optional) |
 | Width | 75:68 | `inputs.value` | PrimitiveInt for image width |
 | Height | 75:69 | `inputs.value` | PrimitiveInt for image height |
 | Seed | 75:73 | `inputs.noise_seed` | RandomNoise seed value |
@@ -177,6 +181,7 @@ WebSocket callbacks handle:
 Utilities for manipulating workflow JSON:
 - `loadWorkflow()` - Load workflow from public folder
 - `updatePrompt(workflow, promptText)` - Update prompt in node 76
+- `updateNegativePrompt(workflow, negativePromptText)` - Update negative prompt in node 75:67
 - `updateDimensions(workflow, width, height)` - Update nodes 75:68, 75:69
 - `updateSeed(workflow, seed)` - Update node 75:73
 - `updateModel(workflow, modelName)` - Update node 75:70
@@ -189,6 +194,7 @@ Utilities for manipulating workflow JSON:
 Components are designed for reusability across different workflow types:
 
 - **PromptInput** - Reusable for any text-based input workflow
+- **NegativePromptInput** - Optional negative prompt with checkbox toggle (default: "blurry, ugly, bad, text")
 - **ParameterControls** - Handles common parameters (dimensions, seed, model)
 - **ImageDisplay** - Generic image viewer with download
 - **ProgressBar** - Universal progress tracking component
