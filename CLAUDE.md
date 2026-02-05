@@ -4,7 +4,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This project creates a web-based user interface for ComfyUI workflows. The goal is to build a custom web UI that interacts with a ComfyUI instance running at `http://127.0.0.1:8188`.
+This project creates a web-based user interface for AI image generation, built with React and Vite. It currently uses ComfyUI as its inference backend (`http://127.0.0.1:8188`), with planned support for Draw Things as an alternate backend for optimized Apple Silicon inference.
+
+## Backend Architecture (Current & Planned)
+
+### Current: ComfyUI Backend
+- REST API at `http://127.0.0.1:8188` (POST /prompt, GET /history, GET /view)
+- WebSocket at `ws://127.0.0.1:8188/ws` for real-time progress
+- Workflow-based: loads a JSON workflow template, injects parameters, queues for execution
+- Runs on any platform; uses CUDA on NVIDIA GPUs, MPS fallback on Apple Silicon
+
+### Planned: Draw Things Backend
+- REST API at `http://localhost:7860` (SD WebUI-compatible: POST /sdapi/v1/txt2img, GET /)
+- Draw Things is a macOS/iOS app with Metal FlashAttention, providing significantly faster diffusion inference on Apple Silicon compared to PyTorch MPS (which ComfyUI uses)
+- Apple Silicon Macs lack support for key CUDA-only optimizations (FlashAttention, SageAttention, Triton) -- Draw Things' native Metal implementation fills this gap
+- Synchronous request-response (no WebSocket progress) -- images returned as base64 in JSON
+- Model/sampler selection done through Draw Things GUI; API uses current app settings
+- The goal is a backend abstraction layer so the same web UI can target either ComfyUI (on CUDA machines or remote servers) or Draw Things (for optimized local Apple Silicon inference)
+
+### Performance Context: Apple Silicon Inference
+- PyTorch MPS (used by ComfyUI on Mac) lacks FlashAttention, SageAttention, and Triton -- all CUDA-only
+- Draw Things uses Metal FlashAttention (community implementation by Philip Turner / Draw Things team), providing substantial speedups over PyTorch MPS for attention-heavy diffusion models
+- Metal FlashAttention v2.5 (Nov 2025) also leverages Apple Neural Engine on M5 chips
+- MLX is another Apple-native option but requires leaving the PyTorch ecosystem entirely
+- For this project, Draw Things is the pragmatic choice: it runs as a local app with an HTTP API, uses optimized Metal kernels, and supports Flux 2 Klein models
 
 ## ComfyUI Workflow Architecture
 

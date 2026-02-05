@@ -92,8 +92,39 @@ Possible approaches:
 
 ---
 
+## 9. Draw Things Backend Support (Multi-Backend Abstraction)
+
+Add Draw Things as an alternate inference backend alongside ComfyUI, enabling optimized local image generation on Apple Silicon Macs via Metal FlashAttention.
+
+### Why
+- ComfyUI on Apple Silicon uses PyTorch MPS, which lacks FlashAttention/SageAttention/Triton (all CUDA-only)
+- Draw Things uses native Metal FlashAttention, providing substantial speedups for diffusion inference on Apple Silicon
+- This project already runs on multiple machines -- ComfyUI on CUDA boxes, but the Mac deserves a fast local backend too
+
+### What
+- Backend abstraction layer in `src/services/` so the UI doesn't care which backend generates the image
+- ComfyUI adapter: wraps existing `comfyui-api.js` (workflow JSON + WebSocket progress)
+- Draw Things adapter: REST API at `localhost:7860`, SD WebUI-compatible (`POST /sdapi/v1/txt2img`), synchronous response with base64 images
+- Backend selector in the UI (e.g., dropdown or settings panel)
+- Handle differences: ComfyUI has real-time WebSocket progress; Draw Things is request-response (show indeterminate progress)
+
+### Draw Things API Details
+- `GET /` -- returns current model/settings as JSON
+- `POST /sdapi/v1/txt2img` -- accepts prompt, dimensions, seed, steps, cfg, etc.; returns base64 image array
+- Model/sampler configured through Draw Things GUI; API uses whatever is currently loaded
+- No authentication required
+- Draw Things must be running with its HTTP API server enabled
+
+### Technical Notes
+- Draw Things added Flux 2 Klein support in v1.20260120.0 (Jan 2026)
+- Draw Things supports safetensors format for model import
+- Flux Klein uses Qwen3 text encoder (4B for Klein 4B, 8B for Klein 9B) -- different from Flux.1's CLIP-L + T5-XXL
+
+---
+
 ## Status: Planning Phase
 
 Awaiting decision on:
 1. Should we investigate metadata format first?
 2. Or discuss feature prioritization and then dig into technical details?
+3. Or start on the Draw Things backend abstraction?
