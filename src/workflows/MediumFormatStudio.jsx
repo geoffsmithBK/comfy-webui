@@ -18,6 +18,7 @@ import {
   getImageUrl,
   generateClientId,
   checkServerStatus,
+  getAvailableLoRAs,
 } from '../services/comfyui-api';
 import {
   MFS_FILM_FORMATS,
@@ -25,6 +26,8 @@ import {
   MFS_LORA_DEFAULTS,
   MFS_OUTPUT_NODES,
   MFS_NODE_STAGE_NAMES,
+  MFS_MODELS,
+  MFS_DEFAULT_MODEL,
 } from '../utils/constants';
 import './MediumFormatStudio.css';
 
@@ -45,6 +48,9 @@ export default function MediumFormatStudio() {
   const [lora2Enabled, setLora2Enabled] = useState(MFS_LORA_DEFAULTS.lora2.defaultEnabled);
   const [lora2Strength, setLora2Strength] = useState(MFS_LORA_DEFAULTS.lora2.defaultStrength);
   const [upscaleFactor, setUpscaleFactor] = useState(1.5);
+  const [model, setModel] = useState(MFS_DEFAULT_MODEL);
+  const [lora1Filename, setLora1Filename] = useState(MFS_LORA_DEFAULTS.lora1.filename);
+  const [lora2Filename, setLora2Filename] = useState(MFS_LORA_DEFAULTS.lora2.filename);
 
   // ── Pipeline state ──────────────────────────────────────────────────
   const [pipelineState, setPipelineState] = useState('idle');
@@ -76,6 +82,25 @@ export default function MediumFormatStudio() {
     };
   }, []);
 
+  // Resolve LoRA filenames from ComfyUI on mount
+  useEffect(() => {
+    async function resolveLoRAs() {
+      try {
+        const available = await getAvailableLoRAs();
+        const resolve = (defaults) => {
+          const match = available.find((f) => defaults.pattern.test(f));
+          return match || defaults.filename;
+        };
+        setLora1Filename(resolve(MFS_LORA_DEFAULTS.lora1));
+        setLora2Filename(resolve(MFS_LORA_DEFAULTS.lora2));
+        console.log('Resolved LoRA filenames from ComfyUI');
+      } catch (err) {
+        console.warn('Could not resolve LoRA filenames, using defaults:', err);
+      }
+    }
+    resolveLoRAs();
+  }, []);
+
   // ── Derived state ───────────────────────────────────────────────────
   const isGenerating = GENERATING_STATES.includes(pipelineState);
   const paramsLocked = pipelineState !== 'idle';
@@ -102,7 +127,10 @@ export default function MediumFormatStudio() {
       lora1Strength,
       lora2Enabled,
       lora2Strength,
+      lora1Filename,
+      lora2Filename,
       upscaleFactor,
+      model,
     };
   }
 
@@ -311,22 +339,37 @@ export default function MediumFormatStudio() {
     <div className="mfs">
       {/* ── Sidebar ─────────────────────────────────────────────── */}
       <div className="mfs-sidebar">
-        <h1 className="app-title">Medium Format Studio</h1>
+        <h1 className="mfs-title">
+          <span className="mfs-title-line">
+            <span className="mfs-title-cap">M</span>
+            <span className="mfs-title-stretch"><span>e</span><span>d</span><span>i</span><span>u</span><span>m</span></span>
+          </span>
+          <span className="mfs-title-line">
+            <span className="mfs-title-cap">F</span>
+            <span className="mfs-title-stretch"><span>o</span><span>r</span><span>m</span><span>a</span><span>t</span></span>
+          </span>
+          <span className="mfs-title-line">
+            <span className="mfs-title-cap">S</span>
+            <span className="mfs-title-stretch"><span>t</span><span>u</span><span>d</span><span>i</span><span>o</span></span>
+          </span>
+        </h1>
 
         <div className="mfs-stages">
-          {/* Stage 1: Negative & Filtration */}
-          <SidebarSection stageNumber={1} title="Negative & Filtration" disabled={false} defaultOpen={false}>
+          {/* Stage 1: Film and Filters */}
+          <SidebarSection stageNumber={1} title="Film and Filters" disabled={false} defaultOpen={false}>
             <div className="mfs-field">
-              <label htmlFor="neg-prompt" className="mfs-label">Negative Prompt</label>
-              <textarea
-                id="neg-prompt"
-                className="mfs-textarea"
-                value={negativePrompt}
-                onChange={(e) => setNegativePrompt(e.target.value)}
-                placeholder="Things to avoid..."
+              <label htmlFor="model-select" className="mfs-label">Model</label>
+              <select
+                id="model-select"
+                className="mfs-select"
+                value={model}
+                onChange={(e) => setModel(e.target.value)}
                 disabled={paramsLocked}
-                rows={2}
-              />
+              >
+                {MFS_MODELS.map((m) => (
+                  <option key={m.filename} value={m.filename}>{m.label}</option>
+                ))}
+              </select>
             </div>
             <LoRAControls
               lora1Enabled={lora1Enabled}

@@ -66,7 +66,7 @@ export const MFS_OUTPUT_NODES = {
 export const MFS_NODE_STAGE_NAMES = {};
 Object.entries(MFS_STAGES).forEach(([stage, nodes]) => {
   const names = {
-    1: 'Negative & Filtration',
+    1: 'Film and Filters',
     2: 'Subject, Style & Format',
     3: 'Develop & Contact Print',
     4: 'Work Print',
@@ -86,6 +86,7 @@ export const MFS_NODE_IDS = {
   LORA_STACK: '18',           // Power Lora Loader (rgthree)
   UPSCALE_FACTOR: '52',       // PrimitiveFloat
   BATCH_SIZE: '55',           // PrimitiveInt
+  UNET_LOADER: '30',          // UNETLoader / UnetLoaderGGUF
 };
 
 // Film format presets — must match the exact string format "Label - WxH"
@@ -103,17 +104,27 @@ export const MFS_FILM_FORMATS = [
 
 export const MFS_DEFAULT_FILM_FORMAT = 'Cinemascope - 1536x640';
 
+// Model options for MFS (FP16 safetensors + GGUF quantizations)
+export const MFS_MODELS = [
+  { label: 'Klein 9B (FP16)', filename: 'flux-2-klein-9b.safetensors', format: 'safetensors' },
+  { label: 'Klein 9B (Q8_0 GGUF)', filename: 'flux-2-klein-9b-Q8_0.gguf', format: 'gguf' },
+  { label: 'Klein 9B (Q6_K GGUF)', filename: 'flux-2-klein-9b-Q6_K.gguf', format: 'gguf' },
+];
+export const MFS_DEFAULT_MODEL = 'flux-2-klein-9b-Q8_0.gguf';
+
 // LoRA defaults (from the workflow template)
 export const MFS_LORA_DEFAULTS = {
   lora1: {
     name: 'Detail',
     filename: 'FluxKlein/detail_slider_klein_9b_20260123_065513.safetensors',
+    pattern: /^FluxKlein\/detail_slider_klein_9b/,
     defaultStrength: 7,
     defaultEnabled: true,
   },
   lora2: {
     name: 'Chiaroscuro',
     filename: 'FluxKlein/klein_slider_chiaroscuro.safetensors',
+    pattern: /^FluxKlein\/klein_slider_chiaroscuro/,
     defaultStrength: 0.8,
     defaultEnabled: true,
   },

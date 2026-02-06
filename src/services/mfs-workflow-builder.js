@@ -2,6 +2,7 @@ import {
   MFS_STAGES,
   MFS_EXCLUDED_NODES,
   MFS_NODE_IDS,
+  MFS_MODELS,
 } from '../utils/constants';
 
 let cachedWorkflow = null;
@@ -52,7 +53,10 @@ function stagesForTarget(target) {
  * @param {number} params.lora1Strength
  * @param {boolean} params.lora2Enabled
  * @param {number} params.lora2Strength
+ * @param {string} [params.lora1Filename] - Resolved LoRA 1 filename
+ * @param {string} [params.lora2Filename] - Resolved LoRA 2 filename
  * @param {number} params.upscaleFactor
+ * @param {string} params.model - Model filename (e.g. 'flux-2-klein-9b-Q8_0.gguf')
  * @returns {Object} Filtered and parameterized workflow ready for /prompt
  */
 export function buildWorkflowForTarget(fullWorkflow, target, skipWorkPrint, params) {
@@ -139,11 +143,31 @@ function applyParams(workflow, params) {
     if (params.lora2Strength !== undefined) {
       lora.lora_2 = { ...lora.lora_2, strength: params.lora2Strength };
     }
+    if (params.lora1Filename) {
+      lora.lora_1 = { ...lora.lora_1, lora: params.lora1Filename };
+    }
+    if (params.lora2Filename) {
+      lora.lora_2 = { ...lora.lora_2, lora: params.lora2Filename };
+    }
   }
 
   // Upscale factor (node 52)
   if (params.upscaleFactor !== undefined && workflow[MFS_NODE_IDS.UPSCALE_FACTOR]) {
     workflow[MFS_NODE_IDS.UPSCALE_FACTOR].inputs.value = params.upscaleFactor;
+  }
+
+  // Model selection (node 30) — swap loader class_type for GGUF models
+  if (params.model && workflow[MFS_NODE_IDS.UNET_LOADER]) {
+    const node = workflow[MFS_NODE_IDS.UNET_LOADER];
+    const modelInfo = MFS_MODELS.find((m) => m.filename === params.model);
+    if (modelInfo && modelInfo.format === 'gguf') {
+      node.class_type = 'UnetLoaderGGUF';
+      node.inputs.unet_name = params.model;
+      delete node.inputs.weight_dtype;
+    } else {
+      node.class_type = 'UNETLoader';
+      node.inputs.unet_name = params.model;
+    }
   }
 }
 
