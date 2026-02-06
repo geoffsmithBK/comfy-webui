@@ -160,6 +160,19 @@ export function connectWebSocket(clientId, callbacks = {}) {
 }
 
 /**
+ * Fetch available LoRA filenames from ComfyUI via /object_info/LoraLoader.
+ * @returns {Promise<string[]>} Array of LoRA filenames available on the server
+ */
+export async function getAvailableLoRAs() {
+  const response = await fetch(`${API_BASE}/object_info/LoraLoader`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch LoRA list: ${response.status}`);
+  }
+  const data = await response.json();
+  return data.LoraLoader.input.required.lora_name[0];
+}
+
+/**
  * Check if ComfyUI server is running
  * @returns {Promise<boolean>} True if server is accessible
  */

@@ -1,5 +1,4 @@
 .image-display {
-  position: relative;
   width: 100%;
   background: #1a1a1a;
   border: 1px solid #404040;
@@ -37,35 +36,87 @@
 
 .generated-image {
   display: block;
-  max-width: 100%;
+  width: 100%;
   height: auto;
   object-fit: contain;
 }
 
+/* ── Download button (below image) ────────────────────────────────── */
+
 .download-button {
-  position: absolute;
-  bottom: 1rem;
-  right: 1rem;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
+  width: 100%;
   padding: 0.625rem 1rem;
-  background: rgba(0, 102, 204, 0.9);
-  border: none;
+  margin-top: 0.5rem;
+  background: #2a2a2a;
+  border: 1px solid #404040;
   border-radius: 6px;
-  color: #ffffff;
+  color: #e0e0e0;
   font-family: inherit;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
-  backdrop-filter: blur(4px);
+  transition: all 0.15s;
 }
 
 .download-button:hover {
-  background: rgba(0, 82, 163, 0.9);
+  background: #333333;
+  border-color: #505050;
 }
 
 .download-button svg {
   flex-shrink: 0;
+}
+
+/* ── Fullscreen overlay ───────────────────────────────────────────── */
+
+.fullscreen-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.fullscreen-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10000;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: #555555;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.fullscreen-close:hover {
+  color: #888888;
+}
+
+.fullscreen-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+  transition: transform 0.15s ease;
+}
+
+.fullscreen-image-zoomed {
+  max-width: none;
+  max-height: none;
+  transition: none;
 }
