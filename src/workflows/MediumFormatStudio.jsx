@@ -393,13 +393,44 @@ export default function MediumFormatStudio() {
 
   function handleGallerySelect(item) {
     setSelectedGalleryItem(item);
-    const meta = extractGalleryItemMetadata(item);
+    const meta = extractGalleryItemMetadata(item) || {};
     setSelectedMetadata(meta);
+
+    // Get actual pixel dimensions from the cached image
+    const img = new Image();
+    img.onload = () => {
+      setSelectedMetadata((prev) => ({ ...prev, width: img.naturalWidth, height: img.naturalHeight }));
+    };
+    img.src = item.imageUrl;
   }
 
   function handleGalleryOpenViewer(item) {
     setGalleryViewerUrl(item.imageUrl);
     setGalleryViewerOpen(true);
+  }
+
+  function handleSendToGenerate() {
+    if (!selectedMetadata) return;
+
+    // Reset pipeline (like New Exposure)
+    closeWebSocket();
+    setPipelineState('idle');
+    setContactPrintUrl('');
+    setWorkPrintUrl('');
+    setFinalPrintUrl('');
+    setProgress(0);
+    setProgressMax(0);
+    setStatus('');
+    setError('');
+    fetchingImageRef.current = false;
+    promptIdRef.current = null;
+
+    // Load params from selected image
+    if (selectedMetadata.prompt) setPrompt(selectedMetadata.prompt);
+    if (selectedMetadata.seed != null) setSeed(selectedMetadata.seed);
+
+    // Switch to Contact Print tab
+    setActiveTab('contact');
   }
 
   // ── Render ──────────────────────────────────────────────────────────
@@ -430,6 +461,7 @@ export default function MediumFormatStudio() {
             imageUrl={selectedGalleryItem?.imageUrl || null}
             filename={selectedGalleryItem?.filename || null}
             metadata={selectedMetadata}
+            onSendToGenerate={selectedMetadata ? handleSendToGenerate : null}
           />
         ) : (
           <>

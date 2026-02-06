@@ -71,9 +71,10 @@
   border: 1px solid #333333;
   border-radius: 4px;
   color: #e0e0e0;
+  font-family: 'JetBrainsMono Nerd Font', 'JetBrains Mono', monospace;
   font-size: 0.813rem;
   line-height: 1.5;
-  max-height: 120px;
+  max-height: 240px;
   overflow-y: auto;
   word-break: break-word;
 }
@@ -97,13 +98,51 @@
   background: #2a2a2a;
   border-radius: 4px;
   color: #e0e0e0;
+  font-family: 'JetBrainsMono Nerd Font', 'JetBrains Mono', monospace;
   font-size: 0.813rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Copyable value (seed) ────────────────────────────────────────── */
+
+.metadata-param-value-copyable {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+}
+
+.metadata-value-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.metadata-inline-copy {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: #606060;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: color 0.15s;
+}
+
+.metadata-inline-copy:hover {
+  color: #0066cc;
 }
 
 /* ── Filename ─────────────────────────────────────────────────────── */
 
 .metadata-filename {
-  font-family: monospace;
+  font-family: 'JetBrainsMono Nerd Font', 'JetBrains Mono', monospace;
   font-size: 0.75rem;
   color: #606060;
   word-break: break-all;
