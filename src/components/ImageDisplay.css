@@ -89,21 +89,21 @@
   top: 1rem;
   right: 1rem;
   z-index: 10000;
-  width: 36px;
-  height: 36px;
+  width: 72px;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: none;
   border: none;
-  color: #555555;
+  color: #333333;
   cursor: pointer;
   border-radius: 4px;
   transition: color 0.15s;
 }
 
 .fullscreen-close:hover {
-  color: #888888;
+  color: #555555;
 }
 
 .fullscreen-image {

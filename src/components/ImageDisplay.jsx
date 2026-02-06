@@ -10,13 +10,14 @@ import './ImageDisplay.css';
  * Escape → exit fullscreen entirely.
  * X button → exit fullscreen.
  */
-export default function ImageDisplay({ imageUrl, prompt }) {
+export default function ImageDisplay({ imageUrl, prompt, aspectRatio }) {
   const [fullscreen, setFullscreen] = useState(false);
   const [zoomed, setZoomed] = useState(false);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
 
   // Track whether user dragged (panned) vs clicked
   const dragRef = useRef({ dragging: false, startX: 0, startY: 0, moved: false });
+  const zoomToggledRef = useRef(false);
   const containerRef = useRef(null);
 
   const handleDownload = () => {
@@ -102,12 +103,13 @@ export default function ImageDisplay({ imageUrl, prompt }) {
     if (!wasDrag && zoomed) {
       setZoomed(false);
       setPanOffset({ x: 0, y: 0 });
+      zoomToggledRef.current = true;
     }
   }, [zoomed]);
 
   if (!imageUrl) {
     return (
-      <div className="image-display image-display-empty">
+      <div className="image-display image-display-empty" style={aspectRatio ? { aspectRatio, minHeight: 'auto' } : undefined}>
         <div className="image-placeholder">
           <svg
             width="80"
@@ -173,7 +175,7 @@ export default function ImageDisplay({ imageUrl, prompt }) {
             type="button"
             aria-label="Close"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -190,6 +192,10 @@ export default function ImageDisplay({ imageUrl, prompt }) {
             }}
             onClick={(e) => {
               e.stopPropagation();
+              if (zoomToggledRef.current) {
+                zoomToggledRef.current = false;
+                return;
+              }
               if (!zoomed) handleImageClick();
             }}
             onMouseDown={onMouseDown}

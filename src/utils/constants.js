@@ -102,7 +102,7 @@ export const MFS_FILM_FORMATS = [
   { label: 'Cinemascope2K', value: 'Cinemascope2K - 2048x864' },
 ];
 
-export const MFS_DEFAULT_FILM_FORMAT = 'Cinemascope - 1536x640';
+export const MFS_DEFAULT_FILM_FORMAT = '6x7 - 1120x928';
 
 // Model options for MFS (FP16 safetensors + GGUF quantizations)
 export const MFS_MODELS = [

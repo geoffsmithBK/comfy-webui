@@ -641,9 +641,9 @@
         0
       ]
     },
-    "class_type": "GetImageSize+",
+    "class_type": "GetImageSize",
     "_meta": {
-      "title": "🔧 Get Image Size"
+      "title": "Get Image Size"
     }
   }
 }

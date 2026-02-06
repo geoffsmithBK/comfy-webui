@@ -39,10 +39,13 @@ const GENERATING_STATES = ['generating_contact', 'generating_work', 'generating_
 
 export default function MediumFormatStudio() {
   // ── Form state ──────────────────────────────────────────────────────
-  const [prompt, setPrompt] = useState('');
+  const [prompt, setPrompt] = useState(() => localStorage.getItem('mfs_prompt') || '');
   const [negativePrompt, setNegativePrompt] = useState('');
   const [filmFormat, setFilmFormat] = useState(MFS_DEFAULT_FILM_FORMAT);
-  const [seed, setSeed] = useState(generateRandomSeed());
+  const [seed, setSeed] = useState(() => {
+    const saved = localStorage.getItem('mfs_seed');
+    return saved ? parseInt(saved, 10) : generateRandomSeed();
+  });
   const [lora1Enabled, setLora1Enabled] = useState(MFS_LORA_DEFAULTS.lora1.defaultEnabled);
   const [lora1Strength, setLora1Strength] = useState(MFS_LORA_DEFAULTS.lora1.defaultStrength);
   const [lora2Enabled, setLora2Enabled] = useState(MFS_LORA_DEFAULTS.lora2.defaultEnabled);
@@ -101,6 +104,10 @@ export default function MediumFormatStudio() {
     resolveLoRAs();
   }, []);
 
+  // Persist prompt and seed to localStorage
+  useEffect(() => { localStorage.setItem('mfs_prompt', prompt); }, [prompt]);
+  useEffect(() => { localStorage.setItem('mfs_seed', String(seed)); }, [seed]);
+
   // ── Derived state ───────────────────────────────────────────────────
   const isGenerating = GENERATING_STATES.includes(pipelineState);
   const paramsLocked = pipelineState !== 'idle';
@@ -114,6 +121,12 @@ export default function MediumFormatStudio() {
     work: workPrintUrl,
     final: finalPrintUrl,
   }[activeTab] || '';
+
+  // Parse aspect ratio from film format string (e.g. "6x7 - 1120x928")
+  const filmAspectRatio = (() => {
+    const match = filmFormat.match(/(\d+)x(\d+)$/);
+    return match ? `${match[1]} / ${match[2]}` : undefined;
+  })();
 
   // ── Helpers ─────────────────────────────────────────────────────────
 
@@ -517,7 +530,7 @@ export default function MediumFormatStudio() {
           enabledTabs={enabledTabs}
         />
 
-        <ImageDisplay imageUrl={currentImageUrl} prompt={prompt} />
+        <ImageDisplay imageUrl={currentImageUrl} prompt={prompt} aspectRatio={filmAspectRatio} />
       </div>
     </div>
   );
