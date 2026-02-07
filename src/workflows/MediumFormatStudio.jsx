@@ -486,7 +486,7 @@ export default function MediumFormatStudio() {
           <>
             <div className="mfs-stages">
               {/* Stage 1: Film and Filters */}
-              <SidebarSection stageNumber={1} title="Film and Filters" disabled={false} defaultOpen={false}>
+              <SidebarSection stageNumber={1} title="Film and Filters" tooltipId="stage-1-film-filters" disabled={false} defaultOpen={false}>
                 <div className="mfs-field">
                   <label htmlFor="model-select" className="mfs-label">Model</label>
                   <select
@@ -517,7 +517,7 @@ export default function MediumFormatStudio() {
               </SidebarSection>
 
               {/* Stage 2: Subject, Style & Format */}
-              <SidebarSection stageNumber={2} title="Subject, Style & Format" defaultOpen={true}>
+              <SidebarSection stageNumber={2} title="Subject, Style & Format" tooltipId="stage-2-subject-style" defaultOpen={true}>
                 <PromptInput
                   value={prompt}
                   onChange={setPrompt}
@@ -533,7 +533,7 @@ export default function MediumFormatStudio() {
               </SidebarSection>
 
               {/* Stage 3: Develop & Contact Print */}
-              <SidebarSection stageNumber={3} title="Develop & Contact Print" defaultOpen={true}>
+              <SidebarSection stageNumber={3} title="Develop & Contact Print" tooltipId="stage-3-develop-contact" defaultOpen={true}>
                 <div className="mfs-seed-row">
                   <div className="mfs-field mfs-seed-field">
                     <label htmlFor="seed" className="mfs-label">Seed</label>
@@ -570,6 +570,7 @@ export default function MediumFormatStudio() {
               <SidebarSection
                 stageNumber={4}
                 title="Work Print"
+                tooltipId="stage-4-work-print"
                 disabled={!canPromote || pipelineState === 'generating_work'}
                 defaultOpen={false}
               >
@@ -601,6 +602,7 @@ export default function MediumFormatStudio() {
               <SidebarSection
                 stageNumber={5}
                 title="Scan / Digital C-Print"
+                tooltipId="stage-5-final-print"
                 disabled={!canPromote || pipelineState === 'generating_final'}
                 defaultOpen={false}
               >

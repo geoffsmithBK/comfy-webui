@@ -1,0 +1,7 @@
+{
+  "stage-1-film-filters": "Load the diffusion model and apply LoRA modifiers. LoRAs adjust the model's style — Detail controls fine-grain sharpness, Chiaroscuro shifts lighting contrast. These filters shape every image produced downstream.",
+  "stage-2-subject-style": "Describe the subject and choose the film format (aspect ratio). The positive prompt is encoded into CLIP embeddings that guide the diffusion process. Film format sets the latent image dimensions.",
+  "stage-3-develop-contact": "Run a quick 6-step diffusion pass to produce a contact print — a fast preview for evaluating composition and prompt adherence before committing to longer refinement stages.",
+  "stage-4-work-print": "Latent-upscale the contact print (default 1.5×) and run a second 4-step diffusion pass, then sharpen. Adds detail and resolution. ComfyUI caches earlier stages so only this work is computed.",
+  "stage-5-final-print": "AI upscale with SeedVR2 (7B) plus final sharpening. Produces the highest-resolution output. Can skip the Work Print stage and upscale directly from the contact print."
+}
