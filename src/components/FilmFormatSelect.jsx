@@ -1,4 +1,5 @@
 import React from 'react';
+import Tooltip from './Tooltip';
 import './FilmFormatSelect.css';
 
 /**
@@ -65,7 +66,7 @@ export default function FilmFormatSelect({ value, onChange, formats, portrait, o
             onChange={(e) => onBwChange(e.target.checked)}
             disabled={disabled}
           />
-          B&amp;W
+          <Tooltip tooltipId="bw-darkroom-mode"><strong>B&amp;W</strong></Tooltip>
         </label>
       </div>
     </div>
