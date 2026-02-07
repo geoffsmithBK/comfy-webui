@@ -17,7 +17,7 @@ export default function PromptInput({ value, onChange, placeholder, disabled }) 
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder || 'Enter your image description...'}
         disabled={disabled}
-        rows={4}
+        rows={8}
       />
     </div>
   );
