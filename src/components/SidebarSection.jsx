@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Tooltip from './Tooltip';
 import './SidebarSection.css';
 
 /**
@@ -7,6 +8,7 @@ import './SidebarSection.css';
 export default function SidebarSection({
   stageNumber,
   title,
+  tooltipId,
   defaultOpen = false,
   disabled = false,
   children,
@@ -25,6 +27,7 @@ export default function SidebarSection({
         <span className="sidebar-section-chevron">{open ? '▾' : '▸'}</span>
         <span className="sidebar-section-badge">{stageNumber}</span>
         <span className="sidebar-section-title">{title}</span>
+        {tooltipId && <Tooltip tooltipId={tooltipId} size={14} />}
       </button>
       {open && !disabled && (
         <div className="sidebar-section-body">{children}</div>

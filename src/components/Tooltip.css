@@ -1,0 +1,53 @@
+.tooltip-trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  cursor: default;
+}
+
+.tooltip-icon {
+  color: #606060;
+  transition: color 0.15s;
+  flex-shrink: 0;
+}
+
+.tooltip-trigger:hover .tooltip-icon {
+  color: #0066cc;
+}
+
+.tooltip-popover {
+  width: 280px;
+  padding: 0.75rem;
+  background: #2a2a2a;
+  border: 1px solid #404040;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  color: #d0d0d0;
+  font-size: 0.8rem;
+  font-weight: 400;
+  line-height: 1.45;
+  z-index: 10000;
+  pointer-events: auto;
+}
+
+/* Arrow pointing left toward the icon */
+.tooltip-popover::before {
+  content: '';
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 6px solid transparent;
+  border-right-color: #404040;
+}
+
+.tooltip-popover::after {
+  content: '';
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-right-color: #2a2a2a;
+}
