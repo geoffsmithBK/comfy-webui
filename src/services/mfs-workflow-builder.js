@@ -86,6 +86,11 @@ export function buildWorkflowForTarget(fullWorkflow, target, skipWorkPrint, para
   // 5. Rewire if skipping work print: nodes 80 and 62 read from node 5
   //    instead of node 74 (which won't exist)
   if (target === 'final' && skipWorkPrint) {
+    // Node 52 (upscale factor) lives in stage 4 but stage 5 nodes 76/77
+    // reference it for resolution math — include it even when skipping stage 4
+    if (fullWorkflow['52']) {
+      workflow['52'] = JSON.parse(JSON.stringify(fullWorkflow['52']));
+    }
     // Node 80 (GetImageSize+): image input → node 5 output 0
     if (workflow['80']) {
       workflow['80'].inputs.image = ['5', 0];
@@ -158,11 +163,14 @@ function applyParams(workflow, params) {
 
   // SeedVR2 device injection (nodes 60, 61, 62)
   // Template has "mps" baked in from Mac export; override for CUDA servers
-  if (params.computeDevice && params.computeDevice !== 'mps') {
+  if (params.computeDevice && params.computeDevice.startsWith('cuda')) {
     const dev = params.computeDevice;
     if (workflow[MFS_NODE_IDS.SEEDVR2_DIT]) {
       workflow[MFS_NODE_IDS.SEEDVR2_DIT].inputs.device = dev;
       workflow[MFS_NODE_IDS.SEEDVR2_DIT].inputs.offload_device = 'cpu';
+      // Swap 20 of ~36 transformer blocks to CPU during inference.
+      // Keeps ~7GB of DiT in VRAM, leaving room for ComfyUI's cached models.
+      workflow[MFS_NODE_IDS.SEEDVR2_DIT].inputs.blocks_to_swap = 30;
     }
     if (workflow[MFS_NODE_IDS.SEEDVR2_VAE]) {
       workflow[MFS_NODE_IDS.SEEDVR2_VAE].inputs.device = dev;
