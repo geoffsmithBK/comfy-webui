@@ -15,6 +15,7 @@ import './FullscreenViewer.css';
  *   native ──shift-click──→ 200
  *   200 ──any click (no drag)──→ native
  *
+ * Small images (fitting within viewport) open at native/1:1 instead of fit.
  * Pan is enabled in native/200 modes when the image exceeds the viewport.
  * Escape / X / backdrop click → close from any state.
  */
@@ -22,8 +23,7 @@ export default function FullscreenViewer({ imageUrl, alt, isOpen, onClose }) {
   const [zoomLevel, setZoomLevel] = useState('fit'); // 'fit' | 'native' | '200'
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [naturalSize, setNaturalSize] = useState({ w: 0, h: 0 });
-  const dragRef = useRef({ dragging: false, startX: 0, startY: 0, moved: false });
-  const zoomToggledRef = useRef(false);
+  const dragRef = useRef({ dragging: false, startX: 0, startY: 0, moved: false, handled: false });
 
   // Reset when opening
   useEffect(() => {
@@ -54,7 +54,13 @@ export default function FullscreenViewer({ imageUrl, alt, isOpen, onClose }) {
   }, [isOpen]);
 
   const handleImageLoad = useCallback((e) => {
-    setNaturalSize({ w: e.target.naturalWidth, h: e.target.naturalHeight });
+    const w = e.target.naturalWidth;
+    const h = e.target.naturalHeight;
+    setNaturalSize({ w, h });
+    // Small images start at native/1:1 instead of scaled-up fit
+    if (w <= window.innerWidth && h <= window.innerHeight) {
+      setZoomLevel('native');
+    }
   }, []);
 
   // Does image exceed viewport at each zoom level?
@@ -84,6 +90,16 @@ export default function FullscreenViewer({ imageUrl, alt, isOpen, onClose }) {
   }, [zoomLevel]);
 
   // ── Pan handlers ──────────────────────────────────────────────────
+  //
+  // Two event paths reach "zoom transition" logic:
+  //   1. onMouseUp  — for pan-enabled modes (drag tracking was started)
+  //   2. onClick    — for non-pan modes (no drag tracking)
+  //
+  // dragRef.handled ensures these never BOTH fire for the same gesture:
+  //   - When drag tracking is active, onMouseUp always sets handled=true,
+  //     so the subsequent onClick is suppressed.
+  //   - When drag tracking is NOT active (non-pan modes), onMouseUp
+  //     exits early, handled stays false, and onClick handles the transition.
 
   const onMouseDown = useCallback((e) => {
     if (!panEnabled) return;
@@ -93,6 +109,7 @@ export default function FullscreenViewer({ imageUrl, alt, isOpen, onClose }) {
       startX: e.clientX - panOffset.x,
       startY: e.clientY - panOffset.y,
       moved: false,
+      handled: false,
     };
   }, [panEnabled, panOffset]);
 
@@ -111,18 +128,20 @@ export default function FullscreenViewer({ imageUrl, alt, isOpen, onClose }) {
     if (!dragRef.current.dragging) return;
     const wasDrag = dragRef.current.moved;
     dragRef.current.dragging = false;
+    // Always mark as handled so onClick doesn't also fire a transition
+    dragRef.current.handled = true;
     if (!wasDrag) {
       transitionZoom(e.shiftKey);
-      zoomToggledRef.current = true;
     }
   }, [transitionZoom]);
 
-  // ── Click handler (for non-pan modes) ─────────────────────────────
+  // ── Click handler (for non-pan modes only) ────────────────────────
 
   const handleImageClick = useCallback((e) => {
     e.stopPropagation();
-    if (zoomToggledRef.current) {
-      zoomToggledRef.current = false;
+    // If drag tracking handled this gesture, skip
+    if (dragRef.current.handled) {
+      dragRef.current.handled = false;
       return;
     }
     transitionZoom(e.shiftKey);
@@ -151,7 +170,7 @@ export default function FullscreenViewer({ imageUrl, alt, isOpen, onClose }) {
         cursor: dragRef.current.dragging ? 'grabbing' : 'grab',
       };
     } else {
-      imageStyle = { cursor: 'zoom-out' };
+      imageStyle = { cursor: 'zoom-in' };
     }
   } else { // '200'
     imageClassName += ' fullscreen-image-zoomed';
