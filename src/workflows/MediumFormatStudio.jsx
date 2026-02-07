@@ -10,6 +10,7 @@ import ContactSheet from '../components/ContactSheet';
 import MetadataPanel from '../components/MetadataPanel';
 import FullscreenViewer from '../components/FullscreenViewer';
 import ServerSettings from '../components/ServerSettings';
+import AboutModal from '../components/AboutModal';
 import {
   loadMFSWorkflow,
   buildWorkflowForTarget,
@@ -51,7 +52,7 @@ const GENERATING_STATES = ['generating_contact', 'generating_work', 'generating_
 const MFS_TABS = [
   { id: 'contact', label: 'Contact Print' },
   { id: 'work', label: 'Work Print' },
-  { id: 'final', label: 'Final Print' },
+  { id: 'final', label: 'Fine Print' },
   { id: 'gallery', label: 'Contact Sheet', className: 'stage-tab-gallery' },
 ];
 
@@ -505,6 +506,11 @@ export default function MediumFormatStudio() {
     <div className="mfs">
       {/* ── Sidebar ─────────────────────────────────────────────── */}
       <div className="mfs-sidebar">
+        <div className="mfs-toolbar">
+          <ServerSettings />
+          <AboutModal />
+        </div>
+
         <h1 className="mfs-title">
           <span className="mfs-title-line">
             <span className="mfs-title-cap">M</span>
@@ -520,6 +526,17 @@ export default function MediumFormatStudio() {
           </span>
         </h1>
 
+        {/* New Exposure button — visible after any stage completes */}
+        {paramsLocked && !isGenerating && (
+          <button
+            type="button"
+            className="mfs-new-exposure-btn"
+            onClick={handleNewExposure}
+          >
+            New Exposure
+          </button>
+        )}
+
         {isGalleryTab ? (
           <MetadataPanel
             imageUrl={selectedGalleryItem?.imageUrl || null}
@@ -528,162 +545,146 @@ export default function MediumFormatStudio() {
             onSendToGenerate={selectedMetadata ? handleSendToGenerate : null}
           />
         ) : (
-          <>
-            <div className="mfs-stages">
-              {/* Stage 1: Film and Filters */}
-              <SidebarSection stageNumber={1} title="Film and Filters" tooltipId="stage-1-film-filters" disabled={false} defaultOpen={false}>
-                <div className="mfs-field">
-                  <label className="mfs-label">Model</label>
-                  <div className="mfs-model-display">
-                    {MFS_MODELS.find((m) => m.filename === model)?.label || model}
-                  </div>
+          <div className="mfs-stages">
+            {/* Stage 1: Film and Filters */}
+            <SidebarSection stageNumber={1} title="Film and Filters" tooltipId="stage-1-film-filters">
+              <div className="mfs-field">
+                <label className="mfs-label">Model</label>
+                <div className="mfs-model-display">
+                  {MFS_MODELS.find((m) => m.filename === model)?.label || model}
                 </div>
-                <LoRAControls
-                  lora1Enabled={lora1Enabled}
-                  lora1Strength={lora1Strength}
-                  lora1Name={MFS_LORA_DEFAULTS.lora1.name}
-                  lora1Min={0} lora1Max={10} lora1Step={1}
-                  lora2Enabled={lora2Enabled}
-                  lora2Strength={lora2Strength}
-                  lora2Name={MFS_LORA_DEFAULTS.lora2.name}
-                  lora2Min={0} lora2Max={1} lora2Step={0.05}
-                  onLora1EnabledChange={setLora1Enabled}
-                  onLora1StrengthChange={setLora1Strength}
-                  onLora2EnabledChange={setLora2Enabled}
-                  onLora2StrengthChange={setLora2Strength}
-                  disabled={paramsLocked}
-                />
-              </SidebarSection>
+              </div>
+              <LoRAControls
+                lora1Enabled={lora1Enabled}
+                lora1Strength={lora1Strength}
+                lora1Name={MFS_LORA_DEFAULTS.lora1.name}
+                lora1Min={0} lora1Max={10} lora1Step={1}
+                lora2Enabled={lora2Enabled}
+                lora2Strength={lora2Strength}
+                lora2Name={MFS_LORA_DEFAULTS.lora2.name}
+                lora2Min={0} lora2Max={1} lora2Step={0.05}
+                onLora1EnabledChange={setLora1Enabled}
+                onLora1StrengthChange={setLora1Strength}
+                onLora2EnabledChange={setLora2Enabled}
+                onLora2StrengthChange={setLora2Strength}
+                disabled={paramsLocked}
+              />
+            </SidebarSection>
 
-              {/* Stage 2: Subject, Style & Format */}
-              <SidebarSection stageNumber={2} title="Subject, Style & Format" tooltipId="stage-2-subject-style" defaultOpen={true}>
-                <PromptInput
-                  value={prompt}
-                  onChange={setPrompt}
-                  placeholder="Describe what we see..."
-                  disabled={paramsLocked}
-                />
-                <FilmFormatSelect
-                  value={filmFormat}
-                  onChange={setFilmFormat}
-                  formats={MFS_FILM_FORMATS}
-                  portrait={portrait}
-                  onPortraitChange={setPortrait}
-                  filmBorders={filmBorders}
-                  onFilmBordersChange={setFilmBorders}
-                  disabled={paramsLocked}
-                />
-              </SidebarSection>
+            {/* Stage 2: Subject, Style & Format */}
+            <SidebarSection stageNumber={2} title="Subject, Style & Format" tooltipId="stage-2-subject-style">
+              <PromptInput
+                value={prompt}
+                onChange={setPrompt}
+                placeholder="Describe what we see..."
+                disabled={paramsLocked}
+              />
+              <FilmFormatSelect
+                value={filmFormat}
+                onChange={setFilmFormat}
+                formats={MFS_FILM_FORMATS}
+                portrait={portrait}
+                onPortraitChange={setPortrait}
+                filmBorders={filmBorders}
+                onFilmBordersChange={setFilmBorders}
+                disabled={paramsLocked}
+              />
+            </SidebarSection>
 
-              {/* Stage 3: Develop & Contact Print */}
-              <SidebarSection stageNumber={3} title="Develop & Contact Print" tooltipId="stage-3-develop-contact" defaultOpen={true}>
-                <div className="mfs-seed-row">
-                  <div className="mfs-field mfs-seed-field">
-                    <label htmlFor="seed" className="mfs-label">Seed</label>
-                    <input
-                      id="seed"
-                      type="number"
-                      className="mfs-input"
-                      value={seed}
-                      onChange={(e) => setSeed(parseInt(e.target.value, 10) || 0)}
-                      disabled={paramsLocked}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    className="mfs-random-btn"
-                    onClick={() => setSeed(generateRandomSeed())}
-                    disabled={paramsLocked}
-                    title="Random seed"
-                  >
-                    Random
-                  </button>
-                </div>
-                <button
-                  type="button"
-                  className="mfs-action-btn mfs-action-primary"
-                  onClick={handleExposeContactPrint}
-                  disabled={isGenerating || !prompt.trim() || paramsLocked}
-                >
-                  {pipelineState === 'generating_contact' ? 'Exposing...' : 'Expose Contact Print'}
-                </button>
-              </SidebarSection>
-
-              {/* Stage 4: Work Print */}
-              <SidebarSection
-                stageNumber={4}
-                title="Work Print"
-                tooltipId="stage-4-work-print"
-                disabled={!canPromote || pipelineState === 'generating_work'}
-                defaultOpen={false}
-              >
-                <div className="mfs-field">
-                  <label htmlFor="upscale" className="mfs-label">Upscale Factor</label>
+            {/* Stage 3: Develop & Contact Print */}
+            <SidebarSection stageNumber={3} title="Develop & Contact Print" tooltipId="stage-3-develop-contact">
+              <div className="mfs-seed-row">
+                <div className="mfs-field mfs-seed-field">
+                  <label htmlFor="seed" className="mfs-label">Seed</label>
                   <input
-                    id="upscale"
+                    id="seed"
                     type="number"
                     className="mfs-input"
-                    value={upscaleFactor}
-                    onChange={(e) => setUpscaleFactor(parseFloat(e.target.value) || 1.5)}
-                    step={0.1}
-                    min={1}
-                    max={3}
+                    value={seed}
+                    onChange={(e) => setSeed(parseInt(e.target.value, 10) || 0)}
                     disabled={paramsLocked}
                   />
                 </div>
                 <button
                   type="button"
-                  className="mfs-action-btn"
-                  onClick={handlePromoteToWorkPrint}
-                  disabled={isGenerating || !contactPrintUrl}
+                  className="mfs-random-btn"
+                  onClick={() => setSeed(generateRandomSeed())}
+                  disabled={paramsLocked}
+                  title="Random seed"
                 >
-                  {pipelineState === 'generating_work' ? 'Promoting...' : 'Promote to Work Print'}
+                  Random
                 </button>
-                {upscaledDims && (
-                  <p className="mfs-dims-note">New dimensions: {upscaledDims.w} x {upscaledDims.h}</p>
-                )}
-              </SidebarSection>
-
-              {/* Stage 5: Scan / Digital C-Print */}
-              <SidebarSection
-                stageNumber={5}
-                title="Scan / Digital C-Print"
-                tooltipId="stage-5-final-print"
-                disabled={!canPromote || pipelineState === 'generating_final'}
-                defaultOpen={false}
-              >
-                <button
-                  type="button"
-                  className="mfs-action-btn"
-                  onClick={handlePromoteToFinalPrint}
-                  disabled={isGenerating || !contactPrintUrl}
-                >
-                  {pipelineState === 'generating_final' ? 'Promoting...' : 'Promote to Final Print'}
-                </button>
-                {upscaledDims && (
-                  <p className="mfs-dims-note">New dimensions: {upscaledDims.w} x {upscaledDims.h}</p>
-                )}
-                {!workPrintUrl && contactPrintUrl && (
-                  <p className="mfs-note">Skips Work Print stage</p>
-                )}
-              </SidebarSection>
-            </div>
-
-            {/* New Exposure button — visible after any stage completes */}
-            {paramsLocked && !isGenerating && (
+              </div>
               <button
                 type="button"
-                className="mfs-new-exposure-btn"
-                onClick={handleNewExposure}
+                className="mfs-action-btn mfs-action-primary"
+                onClick={handleExposeContactPrint}
+                disabled={isGenerating || !prompt.trim() || paramsLocked}
               >
-                New Exposure
+                {pipelineState === 'generating_contact' ? 'Exposing...' : 'Expose Contact Print'}
               </button>
-            )}
-          </>
+            </SidebarSection>
+
+            {/* Stage 4: Work Print */}
+            <SidebarSection
+              stageNumber={4}
+              title="Work Print"
+              tooltipId="stage-4-work-print"
+              disabled={!canPromote || pipelineState === 'generating_work'}
+            >
+              <div className="mfs-field">
+                <label htmlFor="upscale" className="mfs-label">Upscale Factor</label>
+                <input
+                  id="upscale"
+                  type="number"
+                  className="mfs-input"
+                  value={upscaleFactor}
+                  onChange={(e) => setUpscaleFactor(parseFloat(e.target.value) || 1.5)}
+                  step={0.1}
+                  min={1}
+                  max={3}
+                  disabled={paramsLocked}
+                />
+              </div>
+              <button
+                type="button"
+                className="mfs-action-btn"
+                onClick={handlePromoteToWorkPrint}
+                disabled={isGenerating || !contactPrintUrl}
+              >
+                {pipelineState === 'generating_work' ? 'Making...' : 'Make Work Print'}
+              </button>
+              {upscaledDims && (
+                <p className="mfs-dims-note">New dimensions: {upscaledDims.w} x {upscaledDims.h}</p>
+              )}
+            </SidebarSection>
+
+            {/* Stage 5: Scan / Digital C-Print */}
+            <SidebarSection
+              stageNumber={5}
+              title="Fine Print"
+              tooltipId="stage-5-final-print"
+              disabled={!canPromote || pipelineState === 'generating_final'}
+            >
+              <button
+                type="button"
+                className="mfs-action-btn"
+                onClick={handlePromoteToFinalPrint}
+                disabled={isGenerating || !contactPrintUrl}
+              >
+                {pipelineState === 'generating_final' ? 'Making...' : 'Make Fine Print'}
+              </button>
+              {upscaledDims && (
+                <p className="mfs-dims-note">New dimensions: {upscaledDims.w} x {upscaledDims.h}</p>
+              )}
+              {!workPrintUrl && contactPrintUrl && (
+                <p className="mfs-note">Skips Work Print stage</p>
+              )}
+            </SidebarSection>
+          </div>
         )}
 
         {error && <div className="error-message">{error}</div>}
-        <ServerSettings />
       </div>
 
       {/* ── Content Area ────────────────────────────────────────── */}

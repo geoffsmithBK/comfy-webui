@@ -1,0 +1,91 @@
+.about-trigger-btn {
+  display: flex;
+  align-items: center;
+  padding: 6px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: #606060;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.about-trigger-btn:hover {
+  color: #e0e0e0;
+  border-color: #404040;
+}
+
+/* ── Backdrop ─────────────────────────────────────────────────────── */
+
+.about-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+}
+
+/* ── Panel ────────────────────────────────────────────────────────── */
+
+.about-panel {
+  position: relative;
+  max-width: 480px;
+  width: 90%;
+  padding: 2.5rem 2rem 2rem;
+  background: #2a2a2a;
+  border: 1px solid #404040;
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.about-close-btn {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: #707070;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.15s;
+}
+
+.about-close-btn:hover {
+  color: #e0e0e0;
+}
+
+/* ── Logo (reuses mfs-title pattern) ──────────────────────────────── */
+
+.about-logo {
+  display: flex;
+  flex-direction: column;
+  width: max-content;
+  margin: 0 auto 1.5rem;
+  font-size: 32px;
+  font-weight: 700;
+  text-transform: uppercase;
+  line-height: 1.05;
+  color: #ffffff;
+}
+
+.about-logo-line {
+  display: flex;
+}
+
+.about-logo-cap {
+  display: inline-block;
+  width: 1.05em;
+  text-align: center;
+  color: #707070;
+}
+
+.about-logo-stretch {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+}
+

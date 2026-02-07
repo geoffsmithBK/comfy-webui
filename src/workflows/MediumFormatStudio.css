@@ -16,6 +16,13 @@
   gap: 1rem;
 }
 
+.mfs-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: calc(-2rem + 5px) calc(-2rem + 5px) 0;
+}
+
 .mfs-title {
   display: flex;
   flex-direction: column;

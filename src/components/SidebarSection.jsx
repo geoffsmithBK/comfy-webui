@@ -1,37 +1,25 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Tooltip from './Tooltip';
 import './SidebarSection.css';
 
 /**
- * Collapsible sidebar section with stage number badge.
+ * Sidebar section with stage number badge. Always open (no collapse).
  */
 export default function SidebarSection({
   stageNumber,
   title,
   tooltipId,
-  defaultOpen = false,
   disabled = false,
   children,
 }) {
-  const [open, setOpen] = useState(defaultOpen);
-
   return (
     <div className={`sidebar-section${disabled ? ' sidebar-section-disabled' : ''}`}>
-      <button
-        type="button"
-        className="sidebar-section-header"
-        onClick={() => !disabled && setOpen(!open)}
-        aria-expanded={open}
-        disabled={disabled}
-      >
-        <span className="sidebar-section-chevron">{open ? '▾' : '▸'}</span>
+      <div className="sidebar-section-header">
         <span className="sidebar-section-badge">{stageNumber}</span>
         <span className="sidebar-section-title">{title}</span>
         {tooltipId && <Tooltip tooltipId={tooltipId} size={14} />}
-      </button>
-      {open && !disabled && (
-        <div className="sidebar-section-body">{children}</div>
-      )}
+      </div>
+      <div className="sidebar-section-body">{children}</div>
     </div>
   );
 }

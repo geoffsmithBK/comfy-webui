@@ -1,7 +1,5 @@
 .server-settings {
   position: relative;
-  margin-top: auto;
-  align-self: flex-start;
 }
 
 .server-settings-btn {
@@ -31,7 +29,7 @@
 
 .server-settings-panel {
   position: absolute;
-  bottom: calc(100% + 8px);
+  top: calc(100% + 8px);
   left: 0;
   width: 320px;
   padding: 0.75rem;
