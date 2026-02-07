@@ -16,29 +16,9 @@
   width: 100%;
   padding: 0.75rem 1rem;
   background: #1e1e1e;
-  border: none;
   color: #e0e0e0;
-  font-family: inherit;
   font-size: 0.875rem;
   font-weight: 600;
-  cursor: pointer;
-  text-align: left;
-  transition: background-color 0.15s;
-}
-
-.sidebar-section-header:hover:not(:disabled) {
-  background: #252525;
-}
-
-.sidebar-section-header:disabled {
-  cursor: not-allowed;
-}
-
-.sidebar-section-chevron {
-  width: 1em;
-  flex-shrink: 0;
-  font-size: 0.75rem;
-  color: #707070;
 }
 
 .sidebar-section-badge {
