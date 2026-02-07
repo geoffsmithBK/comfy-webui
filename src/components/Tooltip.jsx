@@ -23,14 +23,14 @@ function loadTooltips() {
 }
 
 /**
- * General-purpose tooltip with a circle-I info icon.
+ * General-purpose tooltip with a circle-I info icon, or wrapping custom children.
  *
  * Usage:
- *   <Tooltip tooltipId="stage-1-film-filters" />   — looks up text from tooltips.json
- *   <Tooltip text="Inline description" />           — uses inline text directly
- *   <Tooltip tooltipId="key" size={14} />           — custom icon size
+ *   <Tooltip tooltipId="stage-1-film-filters" />           — icon trigger, text from tooltips.json
+ *   <Tooltip text="Inline description" />                   — icon trigger, inline text
+ *   <Tooltip tooltipId="key"><strong>B&W</strong></Tooltip> — children as trigger (no icon)
  */
-export default function Tooltip({ tooltipId, text, size = 16 }) {
+export default function Tooltip({ tooltipId, text, size = 16, children }) {
   const [visible, setVisible] = useState(false);
   const [content, setContent] = useState(text || '');
   const [popoverStyle, setPopoverStyle] = useState(null);
@@ -71,21 +71,23 @@ export default function Tooltip({ tooltipId, text, size = 16 }) {
       onMouseLeave={() => setVisible(false)}
       onClick={(e) => e.stopPropagation()}
     >
-      <svg
-        className="tooltip-icon"
-        width={size}
-        height={size}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <circle cx="12" cy="12" r="10" />
-        <line x1="12" y1="16" x2="12" y2="12" />
-        <line x1="12" y1="8" x2="12.01" y2="8" />
-      </svg>
+      {children || (
+        <svg
+          className="tooltip-icon"
+          width={size}
+          height={size}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="16" x2="12" y2="12" />
+          <line x1="12" y1="8" x2="12.01" y2="8" />
+        </svg>
+      )}
       {visible && <span className="tooltip-popover" style={popoverStyle}>{content}</span>}
     </span>
   );
