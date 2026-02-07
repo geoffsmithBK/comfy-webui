@@ -68,6 +68,99 @@ These can be implemented incrementally within the current architecture:
 
 4. **LoRA discovery** — We already resolve LoRA filenames from `getAvailableLoRAs()` on mount. The same pattern can be extended to populate a LoRA browser/picker rather than hardcoding the two LoRA slots.
 
+### Update: Dynamic Model Detection (DONE)
+
+The model dropdown has been replaced with auto-detection. On mount, the app queries `GET /object_info/UNETLoader` to discover which Klein 9B variant is installed (FP16, Q8_0, Q6_K), then displays it as a read-only label in Stage 1. The same pattern is used for LoRA filename resolution via `GET /object_info/LoraLoader`.
+
+---
+
+## ADR-002: Cloud GPU via RunPod (Feb 2026)
+
+### Context
+
+Flux Klein 9B on Apple Silicon (MPS) takes 100+ seconds for a 6-step contact print. The bottleneck is fundamental: ~200-400 GB/s memory bandwidth (vs. NVIDIA's 1-2 TB/s), no FlashAttention, no SageAttention, no Triton. The 8B text encoder (Qwen 3) adds significant hidden overhead before the progress bar even starts.
+
+### Decision
+
+**Use RunPod cloud GPUs as an optional remote backend.** The web UI already speaks to ComfyUI over HTTP/WebSocket — changing `127.0.0.1:8188` to a remote URL is a configuration change, not an architecture change.
+
+### Implementation
+
+**Server URL is UI-configurable.** A gear icon in the sidebar lower-left opens a settings popover with a URL input and connection status indicator. The URL is stored in `localStorage` and defaults to `http://127.0.0.1:8188` for zero-config local use. Supports RunPod's HTTPS proxy URLs (`https://<pod-id>-8188.proxy.runpod.net`).
+
+**Protocol handling**: `https://` → `wss://` for WebSocket; `http://` → `ws://`. Derived automatically from the stored URL.
+
+**Compute device auto-detection**: On mount, the app queries `/system_stats` and reads `devices[0].type` to determine `cuda:0` vs `mps`. This is injected into the workflow at build time for nodes that need device-specific configuration (SeedVR2 nodes 60, 61, 62).
+
+### Performance: MPS vs CUDA
+
+Measured with Flux Klein 9B, 6-step contact print, ~1M pixels:
+
+| | Apple Silicon (MPS) | RTX 4090 (CUDA) |
+|---|---|---|
+| Sampling (6 steps) | ~0.5s (13-15 it/s) | ~3.4s (1.78 it/s)* |
+| Total pipeline (cold) | 100+ seconds | ~75 seconds |
+| Total pipeline (warm) | 80-100 seconds | ~4-5 seconds |
+| Memory bandwidth | 200-400 GB/s | 1,008 GB/s |
+| FlashAttention | No | Yes (via PyTorch SDPA) |
+
+*The 4090's lower it/s is misleading — it reflects larger batch throughput per step. Wall-clock time is dramatically faster due to FlashAttention and higher bandwidth. Warm cache (models already loaded) is where CUDA truly shines.
+
+### VRAM Management on 24GB Cards
+
+The MFS pipeline's full model stack exceeds 24GB when loaded simultaneously:
+
+| Model | Size (FP16) |
+|---|---|
+| Flux Klein 9B (diffusion) | ~18 GB |
+| Qwen 3 8B (text encoder, FP8) | ~8 GB |
+| SeedVR2 DiT 7B (AI upscale) | ~15.7 GB |
+| SeedVR2 VAE | ~0.5 GB |
+| Flux VAE | ~0.16 GB |
+
+**Key lessons learned:**
+
+1. **Don't use `--highvram`** on 24GB cards with this pipeline. The default memory mode lets ComfyUI swap models between CPU and GPU. `--highvram` tries to keep everything resident and OOMs when loading the diffusion model after the text encoder.
+
+2. **SeedVR2 manages its own models** outside ComfyUI's model manager. When Stage 5 runs, ComfyUI still has ~12.5GB of Flux cached in VRAM. SeedVR2 tries to load its 15.7GB DiT alongside it → OOM.
+
+3. **`blocks_to_swap = 30`** on SeedVR2's DiT loader (node 60) solves this. The DiT has ~36 transformer blocks; swapping 30 to CPU keeps only 6 blocks (~2.6GB) in VRAM during inference, leaving room for ComfyUI's cached models. Slower due to CPU↔GPU transfer per block, but doesn't OOM.
+
+4. **Workflow template has Mac-specific values baked in** (`"device": "mps"` on SeedVR2 nodes). The workflow builder now auto-injects the correct device based on `/system_stats` detection. Only applies to CUDA — MPS values pass through from the template unchanged.
+
+5. **Skip-work-print rewiring** must include node 52 (upscale factor, lives in Stage 4) even when Stage 4 is excluded, because Stage 5 nodes 76/77 (BasicMath) reference it for resolution calculations.
+
+### Recommended ComfyUI Launch Flags (CUDA)
+
+```bash
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
+python main.py \
+  --listen 0.0.0.0 \
+  --port 8188 \
+  --enable-cors-header \
+  --use-pytorch-cross-attention \
+  --fast \
+  --bf16-unet \
+  --bf16-vae \
+  --disable-auto-launch
+```
+
+Do NOT use `--highvram` or `--gpu-only` on 24GB cards with the MFS pipeline. Default memory management handles model swapping correctly.
+
+### RunPod Operational Notes
+
+- **Pod template**: Use a ComfyUI template with PyTorch 2.6+ and CUDA 12.4+
+- **Custom nodes required**: Same set as local (SeedVR2, rgthree, kjnodes, etc.)
+- **Models**: Must be installed on the pod. Consider RunPod Network Volumes (~$0.10/GB/month) to persist models across pod restarts instead of re-downloading ~40GB each time.
+- **Network Volumes** avoid re-downloading models on every pod start. Mount at `/workspace` and install ComfyUI + models there once.
+- **Cost**: RTX 4090 on RunPod ≈ $0.40-0.70/hour. A few focused sessions per week ≈ $5-10/week.
+- **CORS is mandatory**: ComfyUI must be started with `--enable-cors-header` for the web UI to connect through RunPod's HTTPS proxy.
+- **Proxy URL format**: `https://<pod-id>-8188.proxy.runpod.net` — the app handles `https→wss` conversion for WebSocket automatically.
+
+### Future: Docker Image
+
+A custom Docker image baking in ComfyUI + custom nodes + workflow templates would eliminate per-pod setup friction. Models would still mount from a Network Volume. This is the natural next step for making cloud GPU usage frictionless.
+
 ### Revisit Triggers
 
 Reconsider the Tauri lane if any of these become requirements:
