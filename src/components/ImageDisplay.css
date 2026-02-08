@@ -41,6 +41,12 @@
   object-fit: contain;
 }
 
+.generated-image-fit {
+  width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
 /* ── Download button (below image) ────────────────────────────────── */
 
 .download-button {

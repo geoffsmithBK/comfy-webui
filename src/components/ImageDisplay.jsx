@@ -3,23 +3,24 @@ import FullscreenViewer from './FullscreenViewer';
 import './ImageDisplay.css';
 
 /**
- * Display generated image with download button and fullscreen viewer.
+ * Display generated image with download button.
  *
- * Small images (native width < container) display at 1:1, centered.
- * Click zooms to fit (fills column width). Click again opens fullscreen.
- *
- * Large images display fitted to the column. Click opens fullscreen.
+ * zoomMode controls click behavior:
+ *   'toggle' — two-state: 1:1 centered ↔ best-fit, no fullscreen
+ *   default  — existing behavior (small: 1:1 → fit → fullscreen, large: fit → fullscreen)
  */
-export default function ImageDisplay({ imageUrl, prompt, aspectRatio }) {
+export default function ImageDisplay({ imageUrl, prompt, aspectRatio, zoomMode }) {
   const [viewerOpen, setViewerOpen] = useState(false);
   const [isSmallImage, setIsSmallImage] = useState(false);
   const [inlineFitted, setInlineFitted] = useState(false);
+  const [toggleState, setToggleState] = useState('native'); // 'native' | 'fit'
   const containerRef = useRef(null);
 
-  // Reset inline state when image changes
+  // Reset state when image changes
   useEffect(() => {
     setIsSmallImage(false);
     setInlineFitted(false);
+    setToggleState('native');
   }, [imageUrl]);
 
   const handleImageLoad = (e) => {
@@ -29,6 +30,11 @@ export default function ImageDisplay({ imageUrl, prompt, aspectRatio }) {
   };
 
   const handleClick = () => {
+    if (zoomMode === 'toggle') {
+      setToggleState((s) => (s === 'native' ? 'fit' : 'native'));
+      return;
+    }
+    // Default behavior
     if (isSmallImage && !inlineFitted) {
       setInlineFitted(true);
     } else {
@@ -67,6 +73,34 @@ export default function ImageDisplay({ imageUrl, prompt, aspectRatio }) {
     );
   }
 
+  // Toggle mode: two-state 1:1 ↔ best-fit
+  if (zoomMode === 'toggle') {
+    const isFit = toggleState === 'fit';
+    return (
+      <>
+        <div className="image-display" ref={containerRef}>
+          <img
+            src={imageUrl}
+            alt={prompt || 'Generated image'}
+            className={`generated-image${isFit ? ' generated-image-fit' : ''}`}
+            onClick={handleClick}
+            onLoad={handleImageLoad}
+            style={{ cursor: isFit ? 'zoom-out' : 'zoom-in' }}
+          />
+        </div>
+        <button className="download-button" onClick={handleDownload} type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          Download
+        </button>
+      </>
+    );
+  }
+
+  // Default mode
   return (
     <>
       <div className="image-display" ref={containerRef}>
@@ -83,14 +117,7 @@ export default function ImageDisplay({ imageUrl, prompt, aspectRatio }) {
         />
       </div>
       <button className="download-button" onClick={handleDownload} type="button">
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
           <polyline points="7 10 12 15 17 10" />
           <line x1="12" y1="15" x2="12" y2="3" />
