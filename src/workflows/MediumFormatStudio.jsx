@@ -727,7 +727,12 @@ export default function MediumFormatStudio() {
             />
           </>
         ) : (
-          <ImageDisplay imageUrl={currentImageUrl} prompt={prompt} aspectRatio={filmAspectRatio} />
+          <ImageDisplay
+            imageUrl={currentImageUrl}
+            prompt={prompt}
+            aspectRatio={filmAspectRatio}
+            zoomMode={activeTab === 'contact' ? 'toggle' : undefined}
+          />
         )}
       </div>
     </div>
