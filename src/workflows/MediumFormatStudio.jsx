@@ -75,6 +75,7 @@ export default function MediumFormatStudio() {
   const [upscaleFactor, setUpscaleFactor] = useState(1.5);
   const [model, setModel] = useState('');
   const [availableModels, setAvailableModels] = useState([]);
+  const [modelDetectionState, setModelDetectionState] = useState('detecting'); // 'detecting' | 'found' | 'not-found' | 'error'
   const [lora1Filename, setLora1Filename] = useState(MFS_LORA_DEFAULTS.lora1.filename);
   const [lora2Filename, setLora2Filename] = useState(MFS_LORA_DEFAULTS.lora2.filename);
   const [computeDevice, setComputeDevice] = useState('mps');
@@ -152,11 +153,16 @@ export default function MediumFormatStudio() {
         const allModels = await getAvailableModels();
         const discovered = discoverModels(allModels);
         setAvailableModels(discovered);
-        if (discovered.length > 0 && !model) {
-          setModel(discovered[0].filename);
+        if (discovered.length > 0) {
+          if (!model) setModel(discovered[0].filename);
+          setModelDetectionState('found');
           console.log('Discovered models:', discovered.map((m) => m.label));
+        } else {
+          setModelDetectionState('not-found');
+          console.warn('No Klein 9B models found on server. Available models:', allModels);
         }
       } catch (err) {
+        setModelDetectionState('error');
         console.warn('Could not discover models:', err);
       }
     }
@@ -566,8 +572,11 @@ export default function MediumFormatStudio() {
                     ))}
                   </select>
                 ) : (
-                  <div className="mfs-model-display">
-                    {availableModels[0]?.label || model || 'Detecting...'}
+                  <div className={`mfs-model-display${modelDetectionState === 'error' || modelDetectionState === 'not-found' ? ' mfs-model-display--error' : ''}`}>
+                    {modelDetectionState === 'detecting' && 'Detecting...'}
+                    {modelDetectionState === 'found' && (availableModels[0]?.label || model)}
+                    {modelDetectionState === 'not-found' && 'No Klein 9B model found on server'}
+                    {modelDetectionState === 'error' && 'Server not reachable'}
                   </div>
                 )}
               </div>

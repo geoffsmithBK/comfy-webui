@@ -169,3 +169,42 @@ Reconsider the Tauri lane if any of these become requirements:
 - Menu bar / dock integration
 - Offline operation (no ComfyUI dependency for browsing/organizing)
 - Distributable `.dmg` / `.app` packaging for non-technical users
+
+---
+
+## Local Machine Startup Commands
+
+Reference commands for starting ComfyUI on each local dev machine. `--enable-cors-header` is always required.
+
+### Beelink Mini PC (AMD Ryzen / ROCm / PyTorch CPU-offload path)
+
+```bash
+python3 main.py \
+  --enable-cors-header \
+  --enable-manager \
+  --enable-manager-legacy-ui \
+  --normalvram \
+  --use-pytorch-cross-attention \
+  --force-channels-last \
+  --force-non-blocking \
+  --fast autotune dynamic_vram \
+  --async-offload 3 \
+  --reserve-vram 0.5
+```
+
+**Flag notes:**
+- `--normalvram` — default memory mode; lets ComfyUI swap models as needed (do not use `--highvram` with this pipeline)
+- `--use-pytorch-cross-attention` — falls back to PyTorch's built-in cross-attention (no xFormers/FlashAttention required)
+- `--force-channels-last` — memory layout optimization for AMD
+- `--force-non-blocking` — async CUDA/ROCm transfers
+- `--fast autotune dynamic_vram` — enables fast mode with dynamic VRAM tuning
+- `--async-offload 3` — pipeline depth for async CPU↔GPU offloading
+- `--reserve-vram 0.5` — keep 0.5GB VRAM headroom to avoid OOM on large models
+
+### Mac Studio (M1 Max / Apple Silicon / MPS)
+
+```bash
+# TODO: fill in the full alias flags from the Mac Studio
+python3 main.py \
+  --enable-cors-header
+```
