@@ -176,30 +176,39 @@ Reconsider the Tauri lane if any of these become requirements:
 
 Reference commands for starting ComfyUI on each local dev machine. `--enable-cors-header` is always required.
 
-### Beelink Mini PC (AMD Ryzen / ROCm / PyTorch CPU-offload path)
+### Beelink Mini PC (AMD Ryzen 8000-series / Radeon 780M / UMA)
+
+**System profile**: gfx1103 (RDNA3 iGPU), 12 CUs @ 2600 MHz, 26GB GPU from 32GB LPDDR5-6400 soldered UMA pool. PyTorch 2.10.0+rocm7.12.0a20260203 (TheRock), ROCm 7.2, Triton for ROCm installed. Flash SDPA enabled, BF16 supported.
+
+**Theoretical memory bandwidth**: ~100 GB/s (128-bit LPDDR5-6400). Inference is bandwidth-bound — model quantization is the highest-leverage optimization. **Use Q8_0 GGUF** for Klein 9B: halves bandwidth pressure (18GB → ~9GB) with imperceptible quality difference vs FP16 safetensors.
 
 ```bash
+HSA_ENABLE_SDMA=0 \
+PYTORCH_HIP_ALLOC_CONF=expandable_segments:True \
 python3 main.py \
   --enable-cors-header \
   --enable-manager \
   --enable-manager-legacy-ui \
   --normalvram \
-  --use-pytorch-cross-attention \
+  --bf16-unet \
+  --bf16-vae \
   --force-channels-last \
   --force-non-blocking \
   --fast autotune dynamic_vram \
-  --async-offload 3 \
   --reserve-vram 0.5
 ```
 
 **Flag notes:**
+- `HSA_ENABLE_SDMA=0` — disables DMA engine; on UMA, CPU and GPU share physical memory so SDMA transfers are pure overhead
+- `PYTORCH_HIP_ALLOC_CONF=expandable_segments:True` — reduces allocator fragmentation on the shared memory pool
 - `--normalvram` — default memory mode; lets ComfyUI swap models as needed (do not use `--highvram` with this pipeline)
-- `--use-pytorch-cross-attention` — falls back to PyTorch's built-in cross-attention (no xFormers/FlashAttention required)
-- `--force-channels-last` — memory layout optimization for AMD
-- `--force-non-blocking` — async CUDA/ROCm transfers
-- `--fast autotune dynamic_vram` — enables fast mode with dynamic VRAM tuning
-- `--async-offload 3` — pipeline depth for async CPU↔GPU offloading
-- `--reserve-vram 0.5` — keep 0.5GB VRAM headroom to avoid OOM on large models
+- `--bf16-unet --bf16-vae` — explicit BF16 precision; supported on gfx1103, halves arithmetic demand vs FP32
+- `--force-channels-last` — memory layout optimization for AMD/RDNA
+- `--force-non-blocking` — async ROCm transfers
+- `--fast autotune dynamic_vram` — enables fast mode with dynamic VRAM tuning; activates Triton kernels
+- `--reserve-vram 0.5` — keep 0.5GB headroom for frame buffer and OS
+- *(removed)* `--use-pytorch-cross-attention` — was forcing a slow attention fallback; PyTorch Flash SDPA is enabled and is the better path
+- *(removed)* `--async-offload 3` — async offload pipelines CPU↔GPU transfers, which are meaningless on UMA (same physical memory); adds latency with no benefit
 
 ### Mac Studio (M1 Max / Apple Silicon / MPS)
 
