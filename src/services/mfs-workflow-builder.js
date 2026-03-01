@@ -56,6 +56,7 @@ function stagesForTarget(target) {
  * @param {string} [params.lora2Filename] - Resolved LoRA 2 filename
  * @param {number} params.upscaleFactor
  * @param {string} params.model - Model filename (e.g. 'flux-2-klein-9b-Q8_0.gguf')
+ * @param {string} [params.refinementPrompt] - Optional stage 4 refinement prompt text
  * @returns {Object} Filtered and parameterized workflow ready for /prompt
  */
 export function buildWorkflowForTarget(fullWorkflow, target, skipWorkPrint, params) {
@@ -115,6 +116,17 @@ export function buildWorkflowForTarget(fullWorkflow, target, skipWorkPrint, para
   // 6. Apply user parameters
   applyParams(workflow, params);
 
+  // 7. Bypass refinement conditioning when no refinement prompt
+  if (!params.refinementPrompt) {
+    delete workflow[MFS_NODE_IDS.REFINEMENT_PROMPT];
+    delete workflow[MFS_NODE_IDS.REFINEMENT_COMBINE];
+    delete workflow[MFS_NODE_IDS.STAGE4_GUIDER];
+    // Rewire stage 4 sampler back to the shared guider (node 3)
+    if (workflow['37']) {
+      workflow['37'].inputs.guider = ['3', 0];
+    }
+  }
+
   return workflow;
 }
 
@@ -134,6 +146,11 @@ function applyParams(workflow, params) {
 	promptText += ' The image is monochrome, black and white, as if shot with Kodak Tri-X, Ilford HP5, or another panchromatic film from the 20th century. Ignore earlier mentions of color, the image is devoid of color, however with enhanced and deepened contrast.';
     }
     workflow[MFS_NODE_IDS.POSITIVE_PROMPT].inputs.text = promptText;
+  }
+
+  // Refinement prompt (node 90) — stage 4 only
+  if (params.refinementPrompt && workflow[MFS_NODE_IDS.REFINEMENT_PROMPT]) {
+    workflow[MFS_NODE_IDS.REFINEMENT_PROMPT].inputs.text = params.refinementPrompt;
   }
 
   // Negative prompt (node 7)
