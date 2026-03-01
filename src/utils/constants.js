@@ -83,7 +83,7 @@ export const MFS_STAGES = {
   1: ['30', '18', '11', '12', '7'],
   2: ['13', '19', '55'],
   3: ['16', '10', '2', '3', '1', '6', '4', '5', '17'],
-  4: ['46', '52', '36', '50', '53', '39', '43', '38', '37', '47', '74', '48'],
+  4: ['46', '52', '36', '50', '53', '39', '43', '38', '37', '47', '74', '48', '90', '91', '92'],
   5: ['80', '77', '76', '78', '79', '60', '61', '62', '75', '63'],
 };
 
@@ -125,6 +125,9 @@ export const MFS_NODE_IDS = {
   SEEDVR2_DIT: '60',           // SeedVR2LoadDiTModel
   SEEDVR2_VAE: '61',           // SeedVR2LoadVAEModel
   SEEDVR2_UPSCALER: '62',      // SeedVR2VideoUpscaler
+  REFINEMENT_PROMPT: '90',     // CLIPTextEncode (stage 4 refinement)
+  REFINEMENT_COMBINE: '91',    // ConditioningCombine (original + refinement)
+  STAGE4_GUIDER: '92',         // CFGGuider (stage 4 dedicated)
 };
 
 // Film format presets — must match the exact string format "Label - WxH"
