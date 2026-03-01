@@ -58,7 +58,7 @@ The MFS workflow is a 5-stage pipeline using the Flux.2 Klein 9B model. It uses 
 | 1 | Negative & Filtration | Load 9B model, apply LoRA stack, encode negative prompt | 30, 18, 11, 12, 7 | — |
 | 2 | Subject, Style & Format | Encode positive prompt, set film format/aspect ratio | 13, 19, 55 | — |
 | 3 | Develop & Contact Print | Initial 6-step diffusion → decoded "contact print" | 16, 10, 2, 3, 1, 6, 4, 5, 17 | **17** |
-| 4 | Work Print | Latent upscale (1.5x) + 4-step 2nd pass + sharpen | 46, 52, 36, 50, 53, 39, 43, 38, 37, 47, 74, 48 | **48** |
+| 4 | Work Print | Latent upscale (1.5x) + 4-step 2nd pass + sharpen | 46, 52, 36, 50, 53, 39, 43, 38, 37, 47, 74, 48, 90, 91, 92 | **48** |
 | 5 | Scan / Digital C-Print | SeedVR2 AI upscale + sharpen | 80, 77, 76, 78, 79, 60, 61, 62, 75, 63 | **63** |
 
 **Excluded nodes**: 71 (Image Comparer — UI-only), 54 (disconnected ImageFromBatch)
@@ -70,6 +70,8 @@ The key design principle is progressive execution leveraging ComfyUI's node cach
 1. **Contact Print** (stages 1-3): Quick 6-step generation for evaluation
 2. **Promote to Work Print** (stages 1-4): ComfyUI caches stages 1-3, only runs stage 4
 3. **Promote to Final Print** (stages 1-5): ComfyUI caches everything already computed
+
+**Stage 4 Refinement Prompt**: Stage 4 has an optional refinement prompt that uses its own CLIPTextEncode (node 90), ConditioningCombine (node 91), and CFGGuider (node 92). These nodes live entirely in stage 4, so adding or changing refinement text never invalidates stages 1-3. When the refinement prompt is empty, nodes 90/91/92 are stripped from the workflow and the stage 4 sampler uses the shared guider (node 3), making the workflow identical to the original.
 
 **Skip Work Print**: When promoting directly from contact to final, stage 4 nodes are omitted and stage 5 inputs (nodes 80, 62) are rewired from node 74 (sharpened work print) to node 5 (contact print VAE decode).
 
@@ -84,6 +86,7 @@ The key design principle is progressive execution leveraging ComfyUI's node cach
 | LoRA 1 on/strength | 18 | `inputs.lora_1.on/.strength` | Power Lora Loader (rgthree) |
 | LoRA 2 on/strength | 18 | `inputs.lora_2.on/.strength` | Power Lora Loader (rgthree) |
 | Upscale Factor | 52 | `inputs.value` | PrimitiveFloat (shared between stages 4 & 5) |
+| Refinement Prompt | 90 | `inputs.text` | CLIPTextEncode (stage 4 only) |
 
 ### Film Format Presets
 
