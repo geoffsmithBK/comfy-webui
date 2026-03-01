@@ -5,7 +5,7 @@ import './ContactSheet.css';
  * Thumbnail grid of recent generations.
  * Single click selects; double click opens fullscreen viewer.
  */
-export default function ContactSheet({ items, selectedId, onSelect, onOpenViewer, isLoading, error }) {
+export default function ContactSheet({ items, selectedId, onSelect, onOpenViewer, isLoading, error, gridRef }) {
   if (isLoading) {
     return <div className="contact-sheet-loading">Loading gallery...</div>;
   }
@@ -37,7 +37,7 @@ export default function ContactSheet({ items, selectedId, onSelect, onOpenViewer
 
   return (
     <div className="contact-sheet">
-      <div className="contact-sheet-grid">
+      <div className="contact-sheet-grid" ref={gridRef}>
         {items.map((item) => (
           <div
             key={item.promptId}

@@ -195,6 +195,7 @@ src/
 │   ├── ImageDisplay.jsx       # Image display with inline zoom + fullscreen
 │   ├── FullscreenViewer.jsx   # Shared fullscreen overlay with zoom/pan
 │   ├── ProgressBar.jsx        # Real-time progress indicator
+│   ├── CacheWarningDot.jsx    # Orange dot for changed cache-breaking params
 │   ├── ContactSheet.jsx       # Thumbnail grid for gallery tab
 │   ├── MetadataPanel.jsx      # Sidebar metadata display for gallery
 │   ├── SidebarSection.jsx     # Collapsible sidebar section with stage badge (MFS)
@@ -583,9 +584,11 @@ The application features the multi-stage Medium Format Studio pipeline with prog
 The Contact Sheet tab is the 4th tab in MFS, providing a browsable gallery of recent ComfyUI generations.
 
 ### Gallery Features
-- **Thumbnail grid**: CSS Grid layout (`repeat(auto-fill, minmax(160px, 1fr))`) showing recent generations newest-first
+- **Thumbnail grid**: CSS Grid layout (`repeat(auto-fill, minmax(160px, 1fr))`) showing recent generations
+- **Auto-select**: Most recently generated image is highlighted on tab entry with metadata in sidebar
 - **Selection**: Click a thumbnail to view its metadata in the sidebar
-- **Fullscreen**: Double-click a thumbnail to open FullscreenViewer
+- **Fullscreen**: Double-click a thumbnail, or press Space/Enter on highlighted thumbnail, to open FullscreenViewer
+- **Keyboard navigation**: Arrow keys move selection (Left/Right by 1, Up/Down by grid row with wrapping); Space or Enter opens fullscreen
 - **Metadata panel**: Shows preview, prompt (with copy-to-clipboard), parameter grid (seed with inline copy, model, dimensions, steps, CFG), and filename
 - **Send to Contact Print**: Loads the selected image's prompt and seed into the generation form, resets pipeline, and switches to the Contact Print tab
 - **Always enabled**: The gallery tab is always clickable regardless of pipeline state
@@ -597,10 +600,10 @@ The Contact Sheet tab is the 4th tab in MFS, providing a browsable gallery of re
 - Actual image dimensions are resolved via browser `Image()` constructor (ground truth from the cached image, not workflow metadata)
 
 ### Gallery Data Flow
-1. User switches to Contact Sheet tab → `useEffect` fetches fresh gallery items
-2. Click thumbnail → `handleGallerySelect` extracts metadata, creates `Image()` to get real pixel dimensions
+1. User switches to Contact Sheet tab → `useEffect` fetches fresh gallery items, auto-selects most recent
+2. Click or arrow-key to thumbnail → `handleGallerySelect` extracts metadata, creates `Image()` to get real pixel dimensions
 3. Sidebar shows MetadataPanel with extracted params
-4. Double-click → opens FullscreenViewer for that image
+4. Double-click, Space, or Enter → opens FullscreenViewer for that image
 5. "Send to Contact Print" → resets pipeline (like New Exposure), loads prompt + seed, switches tab
 
 ## Image Viewer
@@ -644,7 +647,19 @@ native ──shift-click──→ 200
 
 **Mouse event coordination**: Two event paths can trigger zoom transitions — `onMouseUp` (pan-enabled modes) and `onClick` (non-pan modes). A `dragRef.handled` flag ensures they never both fire for the same gesture: when drag tracking is active, `onMouseUp` always sets `handled=true`, suppressing the subsequent `onClick`.
 
-**Close**: Escape key, X button, or backdrop click from any zoom state.
+**Keyboard controls** (fullscreen):
+
+| Key | Action |
+|-----|--------|
+| **Space** | Return to grid view |
+| **Enter** | Cycle zoom levels (fit → native → fit; Shift+Enter → 200%) |
+| **Left/Right** | Navigate to adjacent image (preserves zoom level) |
+| **Up/Down** | Navigate by grid row (columnar, preserves zoom level) |
+| **Escape** | Return to grid view |
+
+**Zoom preservation on navigate**: When arrowing between images, the current zoom level is preserved (loupe metaphor) — only pan offset resets. The `navigatingRef` flag in FullscreenViewer skips the small-image auto-zoom-detect on `onLoad` during navigation.
+
+**Close**: Escape key, Space key, X button, or backdrop click from any zoom state.
 
 ## Version Control and Repository
 
