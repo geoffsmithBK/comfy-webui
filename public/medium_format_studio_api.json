@@ -205,7 +205,7 @@
         "lora": "FluxKlein/klein_slider_chiaroscuro.safetensors",
         "strength": 0.8
       },
-      "➕ Add Lora": "",
+      "\u2795 Add Lora": "",
       "model": [
         "30",
         0
@@ -264,7 +264,7 @@
         0
       ],
       "guider": [
-        "3",
+        "92",
         0
       ],
       "sampler": [
@@ -644,6 +644,56 @@
     "class_type": "GetImageSize",
     "_meta": {
       "title": "Get Image Size"
+    }
+  },
+  "90": {
+    "inputs": {
+      "text": "",
+      "clip": [
+        "11",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Refinement Prompt"
+    }
+  },
+  "91": {
+    "inputs": {
+      "conditioning_1": [
+        "13",
+        0
+      ],
+      "conditioning_2": [
+        "90",
+        0
+      ]
+    },
+    "class_type": "ConditioningCombine",
+    "_meta": {
+      "title": "Combine Conditioning"
+    }
+  },
+  "92": {
+    "inputs": {
+      "cfg": 1,
+      "model": [
+        "18",
+        0
+      ],
+      "positive": [
+        "91",
+        0
+      ],
+      "negative": [
+        "7",
+        0
+      ]
+    },
+    "class_type": "CFGGuider",
+    "_meta": {
+      "title": "Stage 4 CFGGuider"
     }
   }
 }
