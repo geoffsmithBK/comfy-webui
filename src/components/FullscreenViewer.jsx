@@ -19,13 +19,13 @@ import './FullscreenViewer.css';
  * Pan is enabled in native/200 modes when the image exceeds the viewport.
  * Escape / X / backdrop click → close from any state.
  */
-export default function FullscreenViewer({ imageUrl, alt, isOpen, onClose }) {
+export default function FullscreenViewer({ imageUrl, alt, isOpen, onClose, onNavigate, getColumnCount }) {
   const [zoomLevel, setZoomLevel] = useState('fit'); // 'fit' | 'native' | '200'
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [naturalSize, setNaturalSize] = useState({ w: 0, h: 0 });
   const dragRef = useRef({ dragging: false, startX: 0, startY: 0, moved: false, handled: false });
 
-  // Reset when opening
+  // Reset zoom when opening
   useEffect(() => {
     if (isOpen) {
       setZoomLevel('fit');
@@ -33,15 +33,16 @@ export default function FullscreenViewer({ imageUrl, alt, isOpen, onClose }) {
     }
   }, [isOpen]);
 
-  // Escape key handler
+  // Reset pan (but not zoom) when image changes while already open
+  const prevUrlRef = useRef(imageUrl);
+  const navigatingRef = useRef(false);
   useEffect(() => {
-    if (!isOpen) return;
-    const handleKey = (e) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [isOpen, onClose]);
+    if (isOpen && imageUrl !== prevUrlRef.current) {
+      setPanOffset({ x: 0, y: 0 });
+      setNaturalSize({ w: 0, h: 0 });
+    }
+    prevUrlRef.current = imageUrl;
+  }, [isOpen, imageUrl]);
 
   // Prevent body scroll when open
   useEffect(() => {
@@ -57,6 +58,11 @@ export default function FullscreenViewer({ imageUrl, alt, isOpen, onClose }) {
     const w = e.target.naturalWidth;
     const h = e.target.naturalHeight;
     setNaturalSize({ w, h });
+    // When navigating between images, preserve zoom level (loupe metaphor)
+    if (navigatingRef.current) {
+      navigatingRef.current = false;
+      return;
+    }
     // Small images start at native/1:1 instead of scaled-up fit
     if (w <= window.innerWidth && h <= window.innerHeight) {
       setZoomLevel('native');
@@ -88,6 +94,26 @@ export default function FullscreenViewer({ imageUrl, alt, isOpen, onClose }) {
     }
     setPanOffset({ x: 0, y: 0 });
   }, [zoomLevel]);
+
+  // Keyboard handler: Escape/Space to close, arrows to navigate, Enter to cycle zoom
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKey = (e) => {
+      if (e.key === 'Escape' || e.key === ' ') { e.preventDefault(); onClose(); }
+      if (e.key === 'Enter') { e.preventDefault(); transitionZoom(e.shiftKey); }
+      if (onNavigate && (e.key === 'ArrowRight' || e.key === 'ArrowLeft' ||
+          e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+        e.preventDefault();
+        navigatingRef.current = true;
+        const step = (e.key === 'ArrowDown' || e.key === 'ArrowUp')
+          ? (getColumnCount ? getColumnCount() : 1) : 1;
+        const dir = (e.key === 'ArrowRight' || e.key === 'ArrowDown') ? step : -step;
+        onNavigate(dir);
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [isOpen, onClose, onNavigate, transitionZoom, getColumnCount]);
 
   // ── Pan handlers ──────────────────────────────────────────────────
   //

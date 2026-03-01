@@ -103,7 +103,7 @@ export default function MediumFormatStudio() {
   const [selectedGalleryItem, setSelectedGalleryItem] = useState(null);
   const [selectedMetadata, setSelectedMetadata] = useState(null);
   const [galleryViewerOpen, setGalleryViewerOpen] = useState(false);
-  const [galleryViewerUrl, setGalleryViewerUrl] = useState('');
+  const [galleryViewerIndex, setGalleryViewerIndex] = useState(-1);
 
   // ── Refs ────────────────────────────────────────────────────────────
   const wsRef = useRef(null);
@@ -111,6 +111,7 @@ export default function MediumFormatStudio() {
   const promptIdRef = useRef(null);
   const fetchingImageRef = useRef(false);
   const lastGeneratedParamsRef = useRef(null);
+  const galleryGridRef = useRef(null);
 
   // Cleanup WebSocket on unmount
   useEffect(() => {
@@ -194,6 +195,20 @@ export default function MediumFormatStudio() {
     }
     loadGallery();
   }, [activeTab]);
+
+  // Auto-select the most recent image when gallery items load
+  useEffect(() => {
+    if (activeTab !== 'gallery' || galleryItems.length === 0) return;
+    const first = galleryItems[galleryItems.length - 1];
+    setSelectedGalleryItem(first);
+    const meta = extractGalleryItemMetadata(first) || {};
+    setSelectedMetadata(meta);
+    const img = new Image();
+    img.onload = () => {
+      setSelectedMetadata((prev) => ({ ...prev, width: img.naturalWidth, height: img.naturalHeight }));
+    };
+    img.src = first.imageUrl;
+  }, [activeTab, galleryItems]);
 
   // ── Derived state ───────────────────────────────────────────────────
   const isGenerating = GENERATING_STATES.includes(pipelineState);
@@ -484,9 +499,56 @@ export default function MediumFormatStudio() {
   }
 
   function handleGalleryOpenViewer(item) {
-    setGalleryViewerUrl(item.imageUrl);
+    const idx = galleryItems.findIndex((i) => i.promptId === item.promptId);
+    setGalleryViewerIndex(idx >= 0 ? idx : 0);
     setGalleryViewerOpen(true);
   }
+
+  function handleGalleryNavigate(direction) {
+    if (galleryItems.length === 0) return;
+    setGalleryViewerIndex((prev) =>
+      (prev + direction + galleryItems.length) % galleryItems.length
+    );
+  }
+
+  function getGridColumns() {
+    if (!galleryGridRef.current) return 1;
+    const cols = getComputedStyle(galleryGridRef.current).gridTemplateColumns;
+    return cols.split(' ').length;
+  }
+
+  // Keyboard navigation for gallery grid view
+  useEffect(() => {
+    if (activeTab !== 'gallery' || galleryViewerOpen || galleryItems.length === 0) return;
+
+    const handleKey = (e) => {
+      // Don't capture when typing in an input/textarea
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft' ||
+          e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        const step = (e.key === 'ArrowDown' || e.key === 'ArrowUp')
+          ? getGridColumns() : 1;
+        const dir = (e.key === 'ArrowRight' || e.key === 'ArrowDown') ? step : -step;
+        const currentIdx = selectedGalleryItem
+          ? galleryItems.findIndex((i) => i.promptId === selectedGalleryItem.promptId)
+          : -1;
+        const nextIdx = currentIdx < 0
+          ? 0
+          : (currentIdx + dir + galleryItems.length) % galleryItems.length;
+        handleGallerySelect(galleryItems[nextIdx]);
+      }
+
+      if ((e.key === ' ' || e.key === 'Enter') && selectedGalleryItem) {
+        e.preventDefault();
+        handleGalleryOpenViewer(selectedGalleryItem);
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [activeTab, galleryViewerOpen, galleryItems, selectedGalleryItem]);
 
   function handleSendToGenerate() {
     if (!selectedMetadata) return;
@@ -770,12 +832,15 @@ export default function MediumFormatStudio() {
               onOpenViewer={handleGalleryOpenViewer}
               isLoading={galleryLoading}
               error={galleryError}
+              gridRef={galleryGridRef}
             />
             <FullscreenViewer
-              imageUrl={galleryViewerUrl}
+              imageUrl={galleryItems[galleryViewerIndex]?.imageUrl || ''}
               alt="Gallery image"
               isOpen={galleryViewerOpen}
               onClose={() => setGalleryViewerOpen(false)}
+              onNavigate={handleGalleryNavigate}
+              getColumnCount={getGridColumns}
             />
           </>
         ) : (
