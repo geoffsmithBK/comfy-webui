@@ -12,7 +12,7 @@ let cachedWorkflow = null;
  */
 export async function loadMFSWorkflow() {
   if (cachedWorkflow) return cachedWorkflow;
-  const response = await fetch('/medium_format_studio_api.json');
+  const response = await fetch(`${import.meta.env.BASE_URL}medium_format_studio_api.json`);
   if (!response.ok) {
     throw new Error(`Failed to load MFS workflow: ${response.status}`);
   }

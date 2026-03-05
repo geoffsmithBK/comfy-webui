@@ -7,7 +7,7 @@ import { NODE_IDS } from '../utils/constants';
 export async function loadWorkflow() {
   try {
     // Use API format workflow (not frontend format)
-    const response = await fetch('/image_flux2_klein_text_to_image_api.json');
+    const response = await fetch(`${import.meta.env.BASE_URL}image_flux2_klein_text_to_image_api.json`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
