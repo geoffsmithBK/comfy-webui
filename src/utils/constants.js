@@ -9,7 +9,8 @@ const LS_KEY = 'comfyui_server_url';
 function normalizeUrl(raw) {
   let url = raw.trim().replace(/\/+$/, '');
   if (!/^https?:\/\//.test(url)) {
-    url = `http://${url}`;
+    const scheme = globalThis.location?.protocol === 'https:' ? 'https' : 'http';
+    url = `${scheme}://${url}`;
   }
   return url;
 }

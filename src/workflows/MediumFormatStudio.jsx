@@ -42,6 +42,7 @@ import {
   MFS_NODE_STAGE_NAMES,
   MFS_MODEL_PATTERN,
   discoverModels,
+  getServerUrl,
 } from '../utils/constants';
 import './MediumFormatStudio.css';
 
@@ -354,7 +355,7 @@ export default function MediumFormatStudio() {
       setStatus('Checking server...');
       const isUp = await checkServerStatus();
       if (!isUp) {
-        throw new Error('ComfyUI server is not running. Please start the server at http://127.0.0.1:8188');
+        throw new Error(`ComfyUI server is not reachable at ${getServerUrl()}`);
       }
 
       // Build workflow
