@@ -8,7 +8,7 @@ let tooltipFetchPromise = null;
 function loadTooltips() {
   if (tooltipCache) return Promise.resolve(tooltipCache);
   if (tooltipFetchPromise) return tooltipFetchPromise;
-  tooltipFetchPromise = fetch('/tooltips.json')
+  tooltipFetchPromise = fetch(`${import.meta.env.BASE_URL}tooltips.json`)
     .then((res) => res.json())
     .then((data) => {
       tooltipCache = data;
