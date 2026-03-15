@@ -318,7 +318,7 @@ python main.py --enable-cors-header
 
 **Terminal 2 - Web UI Frontend:**
 ```bash
-cd /Users/gsmith/work/comfy-webui
+cd /Users/gsmith/work/medium-format-studio
 npm run dev
 ```
 
@@ -378,7 +378,7 @@ To run the application:
 
 2. **Start the web UI** (in a new terminal):
    ```bash
-   cd /Users/gsmith/work/comfy-webui
+   cd /Users/gsmith/work/medium-format-studio
    npm run dev
    ```
 
@@ -676,7 +676,7 @@ native ──shift-click──→ 200
 ## Version Control and Repository
 
 ### GitHub Repository
-**Repository URL**: https://github.com/geoffsmithBK/comfy-webui
+**Repository URL**: https://github.com/geoffsmithBK/medium-format-studio
 
 The project is version-controlled with Git and hosted on GitHub. All source code, documentation, and configuration files are tracked.
 
@@ -711,8 +711,8 @@ git pull                      # Fetch and merge latest changes
 
 **Cloning** (setting up on a new machine):
 ```bash
-git clone https://github.com/geoffsmithBK/comfy-webui.git
-cd comfy-webui
+git clone https://github.com/geoffsmithBK/medium-format-studio.git
+cd medium-format-studio
 npm install                   # Install dependencies
 ```
 
@@ -766,7 +766,7 @@ Use GitHub CLI for creating PRs:
 gh pr create --title "Feature name" --body "Description"
 ```
 
-Or use the web interface at https://github.com/geoffsmithBK/comfy-webui/pulls
+Or use the web interface at https://github.com/geoffsmithBK/medium-format-studio/pulls
 
 ### Release Management
 When ready to tag releases:

@@ -1,4 +1,4 @@
-# ComfyUI Web Interface — Medium Format Studio
+# Medium Format Studio (MFS)
 
 A web-based UI for AI image generation using the **Medium Format Studio** (MFS) workflow — a multi-stage darkroom-metaphor pipeline built on Flux.2 Klein 9B.
 
@@ -22,8 +22,8 @@ A web-based UI for AI image generation using the **Medium Format Studio** (MFS) 
 ## Installation
 
 ```bash
-git clone https://github.com/geoffsmithBK/comfy-webui.git
-cd comfy-webui
+git clone https://github.com/geoffsmithBK/medium-format-studio.git
+cd medium-format-studio
 npm install
 ```
 
@@ -39,7 +39,7 @@ python main.py --enable-cors-header
 
 **Terminal 2 — Web UI:**
 ```bash
-cd /path/to/comfy-webui
+cd /path/to/medium-format-studio
 npm run dev
 ```
 
