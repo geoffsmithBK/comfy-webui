@@ -139,5 +139,5 @@ npm run preview    # Preview production build
 MIT
 
 <p align="center">
-  <img src="img/mfs_about.png">
+  <img width="476" src="img/mfs_about.png">
 </p>
